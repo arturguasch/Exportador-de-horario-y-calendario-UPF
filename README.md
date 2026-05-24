@@ -49,4 +49,4 @@ Extensión no oficial. No está afiliada, avalada ni mantenida por la Universita
 
 La extensión procesa los datos localmente en el navegador. No recopila, vende ni transmite datos personales, credenciales ni información académica a servidores externos.
 
-Política de privacidad: https://arturguasch.github.io/Exportador-de-calendario-para-UPF/
+Política de privacidad: https://arturguasch.github.io/Exportador-de-horario-y-calendario-UPF/
