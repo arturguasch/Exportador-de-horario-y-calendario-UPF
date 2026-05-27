@@ -1,206 +1,176 @@
 {
-  "allSubjects": {
-    "message": "Todas"
-  },
-  "appResetDone": {
-    "message": "Se ha reiniciado la extensión y se han restaurado los valores por defecto."
-  },
-  "appSubtitle": {
-    "message": "Exporta tus clases y ex\u00e1menes a tu calendario favorito."
-  },
-  "appTitle": {
-    "message": "Exportador de horario y calendario UPF"
-  },
-  "blockHint": {
-    "message": "Arrastra los bloques según el orden en que quieres que aparezcan en el título del evento."
-  },
-  "createdMany": {
-    "message": "Archivos generados correctamente."
-  },
-  "createdOne": {
-    "message": "Archivo generado correctamente."
-  },
-  "darkModeLabel": {
-    "message": "Modo oscuro"
-  },
-  "descriptionBuilding": {
-    "message": "Edificio"
-  },
-  "descriptionComment": {
-    "message": "Comentario"
-  },
-  "descriptionGroup": {
-    "message": "Grupo"
-  },
-  "descriptionObservation": {
-    "message": "Observaci\u00f3n"
-  },
-  "descriptionRoom": {
-    "message": "Aula"
-  },
-  "descriptionType": {
-    "message": "Tipo"
-  },
-  "detecting": {
-    "message": "Detectando materias..."
-  },
-  "detectSubjects": {
-    "message": "Detectar materias"
-  },
-  "endDate": {
-    "message": "Fecha final"
-  },
-  "error": {
-    "message": "Error"
-  },
-  "errorDateOrder": {
-    "message": "La fecha final debe ser posterior a la fecha inicial."
-  },
-  "errorDates": {
-    "message": "Elige fecha inicial y fecha final."
-  },
-  "errorNoEventsToExport": {
-    "message": "No hay ning\u00fan evento para exportar en este rango y con esta selecci\u00f3n."
-  },
-  "errorNoSubjectsSelected": {
-    "message": "No hay ninguna materia seleccionada."
-  },
-  "errorOpenUpf": {
-    "message": "Abre primero el calendario de la UPF en esta pestaña."
-  },
-  "eventFormatTitle": {
-    "message": "Formato de eventos"
-  },
-  "examFormat": {
-    "message": "Examen"
-  },
-  "exported": {
-    "message": "Eventos exportados"
-  },
-  "exportedSubjects": {
-    "message": "Materias exportadas"
-  },
-  "exportIcs": {
-    "message": "Exportar .ics"
-  },
-  "extDescription": {
-    "message": "Exporta el horario de clases de la UPF desde Secretar\u00eda Virtual o gestioacad\u00e9mica a Google Calendar, Apple Calendar y Outlook."
-  },
-  "extensionVersion": {
-    "message": "Versión"
-  },
-  "extName": {
-    "message": "Exportador de horario y calendario UPF"
-  },
-  "help1": {
-    "message": "Entra en la <a href=\"https://secretariavirtual.upf.edu\" target=\"_blank\" rel=\"noopener noreferrer\"><strong>secretar\u00eda virtual de la UPF</strong></a> <strong>(recomendado para mayor precisi\u00f3n)</strong> o en <a href=\"https://gestioacademica.upf.edu/pds/consultaPublica/look[conpub]InicioPubHora\" target=\"_blank\" rel=\"noopener noreferrer\"><strong>gestioacad\u00e9mica</strong></a>."
-  },
-  "help2": {
-    "message": "Abre el <strong>calendario de clases</strong>."
-  },
-  "help3": {
-    "message": "Elige <strong>fecha inicial</strong> y <strong>fecha final</strong>."
-  },
-  "help4": {
-    "message": "Pulsa <strong>Detectar materias</strong>."
-  },
-  "help5": {
-    "message": "Marca las materias que quieres exportar."
-  },
-  "help6": {
-    "message": "Activa <strong>Crear un .ics por cada materia seleccionada</strong> si quieres importar cada materia en un calendario distinto."
-  },
-  "help7": {
-    "message": "Pulsa <strong>Exportar .ics</strong>."
-  },
-  "help8": {
-    "message": "El archivo <strong>.ics</strong> es un archivo de calendario. En Google Calendar, ve a <strong>Configuración → Importar y exportar → Importar</strong>, selecciona el archivo .ics y elige el calendario donde quieres añadir los eventos."
-  },
-  "helpImportant": {
-    "message": "<strong>IMPORTANTE:</strong> Para colores en Google Calendar, crea un calendario por materia y pon un color distinto a cada calendario. Luego importa cada .ics de cada materia en su calendario correspondiente."
-  },
-  "howToTitle": {
-    "message": "Cómo usarlo"
-  },
-  "ignored": {
-    "message": "Elementos ignorados"
-  },
-  "importErrorNote": {
-    "message": "Si Google Calendar muestra el error <strong>“No hemos podido importar este archivo. Vuelve a intentarlo dentro de un rato.”</strong>, espera 10 segundos y vuelve a pulsar importar."
-  },
-  "includeDescription": {
-    "message": "Incluir descripción extensiva"
-  },
-  "includeHolidays": {
-    "message": "Incluir festivos y vacaciones"
-  },
-  "language": {
-    "message": "Idioma"
-  },
-  "noSubjects": {
-    "message": "Ninguna"
-  },
-  "noSubjectsInRange": {
-    "message": "No se han detectado materias en este rango."
-  },
-  "pageNotUpf": {
-    "message": "No est\u00e1s en el horario de la <a href=\"https://secretariavirtual.upf.edu\" target=\"_blank\" rel=\"noopener noreferrer\">secretar\u00eda virtual de la UPF</a> o de <a href=\"https://gestioacademica.upf.edu/pds/consultaPublica/look[conpub]InicioPubHora\" target=\"_blank\" rel=\"noopener noreferrer\">gestioacad\u00e9mica</a>. Abre el calendario y vuelve a pulsar la extensi\u00f3n."
-  },
-  "pageUpf": {
-    "message": "Página UPF detectada. Puedes exportar usando tu sesión abierta."
-  },
-  "preparing": {
-    "message": "Preparando exportación..."
-  },
-  "privacyNotice": {
-    "message": "La extensión procesa los datos localmente en el navegador. No recopila, vende ni transmite datos personales, credenciales ni información académica a servidores externos."
-  },
-  "privacyPolicyLink": {
-    "message": "Política de privacidad"
-  },
-  "reading": {
-    "message": "Leyendo eventos desde la sesión abierta en la UPF..."
-  },
-  "received": {
-    "message": "Eventos recibidos"
-  },
-  "resetExtension": {
-    "message": "Reiniciar extensión"
-  },
-  "save": {
-    "message": "Guardar"
-  },
-  "seminarFormat": {
-    "message": "Seminario"
-  },
-  "settingsSaved": {
-    "message": "Configuración guardada."
-  },
-  "settingsTitle": {
-    "message": "Configuración"
-  },
-  "splitBySubject": {
-    "message": "Crear un .ics por cada materia seleccionada"
-  },
-  "startDate": {
-    "message": "Fecha inicial"
-  },
-  "subjectsDetected": {
-    "message": "Materias detectadas"
-  },
-  "subjectsEmpty": {
-    "message": "Aún no hay materias detectadas."
-  },
-  "subjectsSubtitle": {
-    "message": "Pulsa “Detectar materias” para elegir qué quieres exportar."
-  },
-  "subjectsTitle": {
-    "message": "Materias"
-  },
-  "theoryFormat": {
-    "message": "Teoría"
-  },
-  "unofficialNotice": {
-    "message": "Extensión no oficial. No está afiliada, avalada ni mantenida por la Universitat Pompeu Fabra."
+  "manifest_version": 3,
+  "name": "__MSG_extName__",
+  "version": "1.0.2",
+  "description": "__MSG_extDescription__",
+  "icons": {
+    "16": "extension_icons/icon-16.png",
+    "32": "extension_icons/icon-32.png",
+    "48": "extension_icons/icon-48.png",
+    "128": "extension_icons/icon-128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://calendar.google.com/*",
+        "https://chat.google.com/*",
+        "https://docs.google.com/*",
+        "https://docs.google.com/forms/*",
+        "https://drive.google.com/*",
+        "https://keep.google.com/*",
+        "https://mail.google.com/*",
+        "https://maps.google.com/*",
+        "https://meet.google.com/*",
+        "https://www.google.com/maps*",
+        "https://www.google.com/maps/*"
+      ],
+      "js": [
+        "favicon.js"
+      ],
+      "run_at": "document_start",
+      "exclude_matches": [
+        "https://calendar.google.com/*settings*",
+        "https://calendar.google.com/*import*",
+        "https://calendar.google.com/*export*",
+        "https://docs.google.com/*picker*",
+        "https://drive.google.com/*picker*",
+        "https://calendar.google.com/calendar/*/r/settings/*",
+        "https://docs.google.com/*upload*",
+        "https://drive.google.com/*upload*"
+      ]
+    },
+    {
+      "matches": [
+        "https://calendar.google.com/*",
+        "https://chat.google.com/*",
+        "https://docs.google.com/*",
+        "https://docs.google.com/forms/*",
+        "https://drive.google.com/*",
+        "https://keep.google.com/*",
+        "https://mail.google.com/*",
+        "https://maps.google.com/*",
+        "https://meet.google.com/*",
+        "https://www.google.com/maps*",
+        "https://www.google.com/maps/*"
+      ],
+      "js": [
+        "app-header-icon-only.js"
+      ],
+      "run_at": "document_start",
+      "exclude_matches": [
+        "https://calendar.google.com/*settings*",
+        "https://calendar.google.com/*import*",
+        "https://calendar.google.com/*export*",
+        "https://docs.google.com/*picker*",
+        "https://drive.google.com/*picker*",
+        "https://calendar.google.com/calendar/*/r/settings/*",
+        "https://docs.google.com/*upload*",
+        "https://drive.google.com/*upload*"
+      ]
+    },
+    {
+      "matches": [
+        "https://mail.google.com/*",
+        "https://drive.google.com/*",
+        "https://docs.google.com/*",
+        "https://keep.google.com/*",
+        "https://meet.google.com/*",
+        "https://chat.google.com/*",
+        "https://maps.google.com/*",
+        "https://www.google.com/*",
+        "https://www.google.cat/*",
+        "https://ogs.google.com/*"
+      ],
+      "js": [
+        "launcher-grid.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true,
+      "exclude_matches": [
+        "https://calendar.google.com/*settings*",
+        "https://calendar.google.com/*import*",
+        "https://calendar.google.com/*export*",
+        "https://docs.google.com/*picker*",
+        "https://drive.google.com/*picker*",
+        "https://calendar.google.com/calendar/*/r/settings/*",
+        "https://docs.google.com/*upload*",
+        "https://drive.google.com/*upload*"
+      ]
+    },
+    {
+      "matches": [
+        "https://mail.google.com/*",
+        "https://drive.google.com/*",
+        "https://docs.google.com/*",
+        "https://calendar.google.com/*"
+      ],
+      "js": [
+        "workspace-side-panel-icons.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true,
+      "exclude_matches": [
+        "https://calendar.google.com/*settings*",
+        "https://calendar.google.com/*import*",
+        "https://calendar.google.com/*export*",
+        "https://docs.google.com/*picker*",
+        "https://drive.google.com/*picker*",
+        "https://calendar.google.com/calendar/*/r/settings/*",
+        "https://docs.google.com/*upload*",
+        "https://drive.google.com/*upload*"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icons/*.png",
+        "icons/*.svg",
+        "icons/*.webp"
+      ],
+      "matches": [
+        "https://*.google.cat/*",
+        "https://*.google.com/*",
+        "https://calendar.google.com/*",
+        "https://chat.google.com/*",
+        "https://docs.google.com/*",
+        "https://drive.google.com/*",
+        "https://keep.google.com/*",
+        "https://mail.google.com/*",
+        "https://maps.google.com/*",
+        "https://meet.google.com/*",
+        "https://ogs.google.com/*",
+        "https://ssl.gstatic.com/*",
+        "https://www.google.com/*",
+        "https://www.gstatic.com/*"
+      ]
+    }
+  ],
+  "permissions": [
+    "alarms",
+    "declarativeNetRequest"
+  ],
+  "host_permissions": [
+    "https://*.google.cat/*",
+    "https://*.google.com/*",
+    "https://calendar.google.com/*",
+    "https://docs.google.com/*",
+    "https://maps.google.com/*",
+    "https://ssl.gstatic.com/*",
+    "https://www.google.com/*",
+    "https://www.google.com/maps/*",
+    "https://www.gstatic.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "short_name": "__MSG_extShortName__",
+  "default_locale": "en",
+  "action": {
+    "default_icon": {
+      "16": "extension_icons/icon-16.png",
+      "32": "extension_icons/icon-32.png",
+      "48": "extension_icons/icon-48.png"
+    }
   }
 }
