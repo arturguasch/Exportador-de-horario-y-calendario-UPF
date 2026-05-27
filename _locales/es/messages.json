@@ -1,18 +1,206 @@
 {
-  "extName": {
-    "message": "Iconos antiguos de Google para Workspace",
-    "description": "Nombre principal. Alternativa secundaria: Iconos antiguos de Google para Workspace"
+  "allSubjects": {
+    "message": "Todas"
   },
-  "extShortName": {
-    "message": "Iconos antiguos Google",
-    "description": "Nombre corto en castellano"
+  "appResetDone": {
+    "message": "Se ha reiniciado la extensión y se han restaurado los valores por defecto."
+  },
+  "appSubtitle": {
+    "message": "Exporta tus clases y ex\u00e1menes a tu calendario favorito."
+  },
+  "appTitle": {
+    "message": "Exportador de horario y calendario UPF"
+  },
+  "blockHint": {
+    "message": "Arrastra los bloques según el orden en que quieres que aparezcan en el título del evento."
+  },
+  "createdMany": {
+    "message": "Archivos generados correctamente."
+  },
+  "createdOne": {
+    "message": "Archivo generado correctamente."
+  },
+  "darkModeLabel": {
+    "message": "Modo oscuro"
+  },
+  "descriptionBuilding": {
+    "message": "Edificio"
+  },
+  "descriptionComment": {
+    "message": "Comentario"
+  },
+  "descriptionGroup": {
+    "message": "Grupo"
+  },
+  "descriptionObservation": {
+    "message": "Observaci\u00f3n"
+  },
+  "descriptionRoom": {
+    "message": "Aula"
+  },
+  "descriptionType": {
+    "message": "Tipo"
+  },
+  "detecting": {
+    "message": "Detectando materias..."
+  },
+  "detectSubjects": {
+    "message": "Detectar materias"
+  },
+  "endDate": {
+    "message": "Fecha final"
+  },
+  "error": {
+    "message": "Error"
+  },
+  "errorDateOrder": {
+    "message": "La fecha final debe ser posterior a la fecha inicial."
+  },
+  "errorDates": {
+    "message": "Elige fecha inicial y fecha final."
+  },
+  "errorNoEventsToExport": {
+    "message": "No hay ning\u00fan evento para exportar en este rango y con esta selecci\u00f3n."
+  },
+  "errorNoSubjectsSelected": {
+    "message": "No hay ninguna materia seleccionada."
+  },
+  "errorOpenUpf": {
+    "message": "Abre primero el calendario de la UPF en esta pestaña."
+  },
+  "eventFormatTitle": {
+    "message": "Formato de eventos"
+  },
+  "examFormat": {
+    "message": "Examen"
+  },
+  "exported": {
+    "message": "Eventos exportados"
+  },
+  "exportedSubjects": {
+    "message": "Materias exportadas"
+  },
+  "exportIcs": {
+    "message": "Exportar .ics"
   },
   "extDescription": {
-    "message": "Restaura iconos y favicons clásicos de Google Workspace.",
-    "description": "Descripción corta en castellano"
+    "message": "Exporta el horario de clases de la UPF desde Secretar\u00eda Virtual o gestioacad\u00e9mica a Google Calendar, Apple Calendar y Outlook."
   },
-  "secondaryTitle": {
-    "message": "Iconos antiguos de Google para Workspace",
-    "description": "Alternativa secundaria para ficha localizada"
+  "extensionVersion": {
+    "message": "Versión"
+  },
+  "extName": {
+    "message": "Exportador de horario y calendario UPF"
+  },
+  "help1": {
+    "message": "Entra en la <a href=\"https://secretariavirtual.upf.edu\" target=\"_blank\" rel=\"noopener noreferrer\"><strong>secretar\u00eda virtual de la UPF</strong></a> <strong>(recomendado para mayor precisi\u00f3n)</strong> o en <a href=\"https://gestioacademica.upf.edu/pds/consultaPublica/look[conpub]InicioPubHora?entradaPublica=true&idiomaPais=ca.ES\" target=\"_blank\" rel=\"noopener noreferrer\"><strong>gestioacad\u00e9mica</strong></a>."
+  },
+  "help2": {
+    "message": "Abre el <strong>calendario de clases</strong>."
+  },
+  "help3": {
+    "message": "Elige <strong>fecha inicial</strong> y <strong>fecha final</strong>."
+  },
+  "help4": {
+    "message": "Pulsa <strong>Detectar materias</strong>."
+  },
+  "help5": {
+    "message": "Marca las materias que quieres exportar."
+  },
+  "help6": {
+    "message": "Activa <strong>Crear un .ics por cada materia seleccionada</strong> si quieres importar cada materia en un calendario distinto."
+  },
+  "help7": {
+    "message": "Pulsa <strong>Exportar .ics</strong>."
+  },
+  "help8": {
+    "message": "El archivo <strong>.ics</strong> es un archivo de calendario. En Google Calendar, ve a <strong>Configuración → Importar y exportar → Importar</strong>, selecciona el archivo .ics y elige el calendario donde quieres añadir los eventos."
+  },
+  "helpImportant": {
+    "message": "<strong>IMPORTANTE:</strong> Para colores en Google Calendar, crea un calendario por materia y pon un color distinto a cada calendario. Luego importa cada .ics de cada materia en su calendario correspondiente."
+  },
+  "howToTitle": {
+    "message": "Cómo usarlo"
+  },
+  "ignored": {
+    "message": "Elementos ignorados"
+  },
+  "importErrorNote": {
+    "message": "Si Google Calendar muestra el error <strong>“No hemos podido importar este archivo. Vuelve a intentarlo dentro de un rato.”</strong>, espera 10 segundos y vuelve a pulsar importar."
+  },
+  "includeDescription": {
+    "message": "Incluir descripción extensiva"
+  },
+  "includeHolidays": {
+    "message": "Incluir festivos y vacaciones"
+  },
+  "language": {
+    "message": "Idioma"
+  },
+  "noSubjects": {
+    "message": "Ninguna"
+  },
+  "noSubjectsInRange": {
+    "message": "No se han detectado materias en este rango."
+  },
+  "pageNotUpf": {
+    "message": "No est\u00e1s en el horario de la <a href=\"https://secretariavirtual.upf.edu\" target=\"_blank\" rel=\"noopener noreferrer\">secretar\u00eda virtual de la UPF</a> o de <a href=\"https://gestioacademica.upf.edu/pds/consultaPublica/look[conpub]InicioPubHora?entradaPublica=true&idiomaPais=ca.ES\" target=\"_blank\" rel=\"noopener noreferrer\">gestioacad\u00e9mica</a>. Abre el calendario y vuelve a pulsar la extensi\u00f3n."
+  },
+  "pageUpf": {
+    "message": "Página UPF detectada. Puedes exportar usando tu sesión abierta."
+  },
+  "preparing": {
+    "message": "Preparando exportación..."
+  },
+  "privacyNotice": {
+    "message": "La extensión procesa los datos localmente en el navegador. No recopila, vende ni transmite datos personales, credenciales ni información académica a servidores externos."
+  },
+  "privacyPolicyLink": {
+    "message": "Política de privacidad"
+  },
+  "reading": {
+    "message": "Leyendo eventos desde la sesión abierta en la UPF..."
+  },
+  "received": {
+    "message": "Eventos recibidos"
+  },
+  "resetExtension": {
+    "message": "Reiniciar extensión"
+  },
+  "save": {
+    "message": "Guardar"
+  },
+  "seminarFormat": {
+    "message": "Seminario"
+  },
+  "settingsSaved": {
+    "message": "Configuración guardada."
+  },
+  "settingsTitle": {
+    "message": "Configuración"
+  },
+  "splitBySubject": {
+    "message": "Crear un .ics por cada materia seleccionada"
+  },
+  "startDate": {
+    "message": "Fecha inicial"
+  },
+  "subjectsDetected": {
+    "message": "Materias detectadas"
+  },
+  "subjectsEmpty": {
+    "message": "Aún no hay materias detectadas."
+  },
+  "subjectsSubtitle": {
+    "message": "Pulsa “Detectar materias” para elegir qué quieres exportar."
+  },
+  "subjectsTitle": {
+    "message": "Materias"
+  },
+  "theoryFormat": {
+    "message": "Teoría"
+  },
+  "unofficialNotice": {
+    "message": "Extensión no oficial. No está afiliada, avalada ni mantenida por la Universitat Pompeu Fabra."
   }
 }
