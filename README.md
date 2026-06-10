@@ -2,6 +2,10 @@
 
 Extensión para Chrome y Edge que exporta el horario de clases de la UPF desde Secretaría Virtual o gestioacadémica a archivos `.ics` compatibles con Google Calendar, Apple Calendar, Outlook y otros calendarios.
 
+## Instalación sencilla
+Añadir la extensión de forma automática des de la chrome webstore
+https://chromewebstore.google.com/detail/ijndcdclgmgbmdmcppklikbmdgbapaig?utm_source=item-share-cb
+
 ## Instalación manual
 
 1. Descomprime el ZIP en una carpeta fija.
