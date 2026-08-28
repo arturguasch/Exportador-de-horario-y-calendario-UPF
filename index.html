@@ -5,36 +5,101 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Política de privacidad - Exportador d'horari i calendari UPF</title>
 </head>
-<body style="font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; line-height: 1.6; padding: 0 20px;">
+<body style="font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; line-height: 1.6; padding: 0 20px; color: #172033;">
   <h1>Política de privacidad</h1>
 
-  <p><strong>Exportador d'horari i calendari UPF</strong> es una extensión no oficial. No está afiliada, avalada ni mantenida por la Universitat Pompeu Fabra.</p>
+  <p><strong>Exportador d'horari i calendario UPF</strong> (versión 1.1) es una extensión no oficial. No está afiliada, avalada ni mantenida por la Universitat Pompeu Fabra.</p>
 
-  <p>La extensión permite exportar el horario de clases de la UPF a archivos <code>.ics</code> compatibles con Google Calendar, Apple Calendar, Outlook y otros calendarios.</p>
-
-  <p>La extensión procesa los datos localmente en el navegador. No recopila, vende ni transmite datos personales, credenciales ni información académica a servidores externos.</p>
-
-  <p>La extensión solo accede a las páginas compatibles de la UPF cuando el usuario la utiliza: la Secretaría Virtual de la UPF y el horario público de gestioacadémica. Este acceso se usa únicamente para leer los eventos del calendario y generar archivos <code>.ics</code>.</p>
-
-  <p>Los archivos <code>.ics</code> se generan localmente y se descargan en el dispositivo del usuario. La extensión no sube el calendario ni el contenido de los eventos a ningún servidor externo.</p>
-
-  <p>La extensión puede guardar preferencias locales, como idioma, modo oscuro y formato de los títulos de los eventos, usando el almacenamiento local del navegador.</p>
-
-  <p>La extensión no utiliza analíticas, cookies, publicidad ni seguimiento.</p>
-
-  <h2>Permisos utilizados</h2>
-
+  <p>La extensión permite exportar el horario de clases de la UPF de dos formas:</p>
   <ul>
-    <li><strong>activeTab</strong>: permite actuar sobre la pestaña activa cuando el usuario abre la extensión.</li>
-    <li><strong>scripting</strong>: permite leer los eventos del calendario de la página UPF abierta por el usuario.</li>
-    <li><strong>downloads</strong>: permite descargar los archivos <code>.ics</code> generados.</li>
-    <li><strong>storage</strong>: permite guardar preferencias locales de la extensión.</li>
+    <li><strong>Modo manual:</strong> generar y descargar archivos <code>.ics</code> en el dispositivo del usuario.</li>
+    <li><strong>Modo automático:</strong> sincronizar eventos directamente con Google Calendar del usuario, si este lo autoriza.</li>
   </ul>
 
-  <p>La extensión solo declara acceso a los dominios <code>secretariavirtual.upf.edu</code> y <code>gestioacademica.upf.edu</code>.</p>
+  <h2>Resumen</h2>
+  <ul>
+    <li>La lectura del horario UPF se hace en el navegador del usuario.</li>
+    <li>La extensión no vende datos ni utiliza analíticas, publicidad ni seguimiento.</li>
+    <li>La extensión no opera servidores propios para almacenar horarios ni credenciales.</li>
+    <li>La sincronización con Google Calendar solo ocurre si el usuario conecta su cuenta y pulsa sincronizar.</li>
+  </ul>
 
-  <p>Contacto: upfcalendarexporter@gmail.com</p>
+  <h2>Datos que procesa la extensión</h2>
 
-  <p>Última actualización: 12 de mayo de 2026</p>
+  <h3>Horario UPF</h3>
+  <p>Cuando el usuario utiliza la extensión en una página compatible de la UPF, esta lee los eventos del calendario visible en esa sesión (asignaturas, fechas, horas, aulas, grupos y metadatos relacionados) para generar el archivo <code>.ics</code> o sincronizar con Google Calendar.</p>
+  <p>Este acceso solo se produce cuando el usuario abre la extensión y ejecuta una acción de exportación o sincronización.</p>
+
+  <h3>Preferencias locales</h3>
+  <p>La extensión puede guardar en el almacenamiento local del navegador (<code>chrome.storage</code>):</p>
+  <ul>
+    <li>idioma, modo oscuro y modo de exportación preferido;</li>
+    <li>fechas, materias seleccionadas y opciones de exportación;</li>
+    <li>formato personalizado de títulos de eventos;</li>
+    <li>colores asignados por materia o tipo de evento (modo Google Calendar).</li>
+  </ul>
+
+  <h3>Modo manual (.ics)</h3>
+  <p>Los archivos <code>.ics</code> se generan localmente en el navegador y se descargan en el dispositivo del usuario. La extensión no sube el calendario ni el contenido de los eventos a ningún servidor propio.</p>
+
+  <h3>Modo automático (Google Calendar)</h3>
+  <p>Si el usuario conecta su cuenta de Google, la extensión utiliza OAuth para obtener un token de acceso temporal y enviar a <strong>Google Calendar</strong> únicamente los eventos que el usuario decide exportar o sincronizar.</p>
+  <p>En concreto, puede enviar a la API de Google Calendar:</p>
+  <ul>
+    <li>título, fecha y hora de inicio y fin;</li>
+    <li>descripción del evento (si el usuario activa esa opción);</li>
+    <li>color o etiqueta del evento (si el usuario la configura);</li>
+    <li>identificador interno para actualizar o eliminar eventos ya sincronizados.</li>
+  </ul>
+  <p>La extensión también puede leer el correo electrónico de la cuenta conectada para mostrar con qué cuenta está vinculada. Ese dato no se envía a servidores propios del desarrollador.</p>
+  <p>El token de acceso y la información mínima de conexión (por ejemplo, el calendario usado y el mapa de eventos sincronizados) se guardan localmente en el navegador del usuario. El usuario puede desconectar su cuenta en cualquier momento desde la extensión.</p>
+  <p>Google trata estos datos según su propia política de privacidad: <a href="https://policies.google.com/privacy">https://policies.google.com/privacy</a></p>
+
+  <h2>Páginas y dominios accedidos</h2>
+  <p>La extensión solo declara acceso a los siguientes dominios:</p>
+  <ul>
+    <li><code>secretariavirtual.upf.edu</code> — lectura del horario desde la Secretaría Virtual de la UPF.</li>
+    <li><code>gestioacademica.upf.edu</code> — lectura del horario público de gestió académica.</li>
+    <li><code>www.googleapis.com</code> — sincronización con Google Calendar (solo si el usuario lo autoriza).</li>
+    <li><code>accounts.google.com</code> — inicio de sesión OAuth con Google (solo si el usuario lo autoriza).</li>
+  </ul>
+
+  <h2>Permisos de la extensión</h2>
+  <ul>
+    <li><strong>activeTab</strong>: actuar sobre la pestaña activa cuando el usuario abre la extensión.</li>
+    <li><strong>tabs</strong>: comprobar si la pestaña activa es una página UPF compatible.</li>
+    <li><strong>scripting</strong>: leer los eventos del calendario en la página UPF abierta por el usuario.</li>
+    <li><strong>downloads</strong>: descargar los archivos <code>.ics</code> generados en modo manual.</li>
+    <li><strong>storage</strong>: guardar preferencias locales, estado de sesión y datos de sincronización con Google Calendar.</li>
+    <li><strong>identity</strong>: iniciar el flujo OAuth con Google Calendar cuando el usuario pulsa conectar o sincronizar.</li>
+  </ul>
+
+  <h2>Datos que no recopilamos</h2>
+  <p>El desarrollador de la extensión no recopila, almacena en servidores propios ni vende:</p>
+  <ul>
+    <li>contraseñas de la UPF o de Google;</li>
+    <li>contenido académico fuera de lo necesario para exportar o sincronizar el horario elegido por el usuario;</li>
+    <li>datos de navegación con fines publicitarios o de analítica.</li>
+  </ul>
+
+  <h2>Conservación y eliminación</h2>
+  <p>Los datos guardados localmente permanecen en el navegador del usuario hasta que:</p>
+  <ul>
+    <li>el usuario pulsa «Reiniciar extensión» en la configuración;</li>
+    <li>el usuario pulsa «Desconectar» en el modo Google Calendar;</li>
+    <li>el usuario desinstala la extensión o borra sus datos de extensiones en Chrome.</li>
+  </ul>
+  <p>Los eventos ya creados en Google Calendar permanecen en la cuenta de Google del usuario hasta que este los elimine manualmente o vuelva a sincronizar con una selección distinta.</p>
+
+  <h2>Menores de edad</h2>
+  <p>La extensión está pensada para estudiantes y usuarios de la UPF. No recopilamos deliberadamente datos de menores de 14 años fuera del uso normal de exportación o sincronización del horario académico autorizado por el propio usuario.</p>
+
+  <h2>Cambios en esta política</h2>
+  <p>Esta política puede actualizarse cuando cambien las funciones de la extensión. La fecha de la última revisión se indica al final de esta página.</p>
+
+  <h2>Contacto</h2>
+  <p>Para consultas sobre privacidad: <a href="mailto:upfcalendarexporter@gmail.com">upfcalendarexporter@gmail.com</a></p>
+
+  <p><em>Última actualización: 28 de agosto de 2026</em></p>
 </body>
 </html>
