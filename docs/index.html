@@ -1,284 +1,38 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ca">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Exportador d'horari i calendari UPF</title>
-  <style>
-    :root {
-      --bg: #f4f6fb;
-      --card: #ffffff;
-      --text: #172033;
-      --muted: #65728a;
-      --primary: #1457d9;
-      --border: #d9e0ec;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      line-height: 1.6;
-      color: var(--text);
-      background: var(--bg);
-    }
-
-    .wrap {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 32px 20px 64px;
-    }
-
-    .hero {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 28px;
-      margin-bottom: 24px;
-    }
-
-    h1 {
-      margin: 0 0 8px;
-      font-size: 1.8rem;
-      line-height: 1.2;
-    }
-
-    .subtitle {
-      margin: 0 0 20px;
-      color: var(--muted);
-    }
-
-    .badge {
-      display: inline-block;
-      margin-bottom: 16px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: #eaf0ff;
-      color: var(--primary);
-      font-size: 0.85rem;
-      font-weight: 700;
-    }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 20px;
-    }
-
-    .btn {
-      display: inline-block;
-      padding: 12px 18px;
-      border-radius: 10px;
-      text-decoration: none;
-      font-weight: 700;
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      color: #fff;
-    }
-
-    .btn-secondary {
-      background: #fff;
-      color: var(--primary);
-      border: 1px solid var(--border);
-    }
-
-    .features {
-      display: grid;
-      gap: 12px;
-      margin: 20px 0 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .features li {
-      background: #fbfcff;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 16px;
-    }
-
-    .section {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 28px;
-      margin-bottom: 24px;
-    }
-
-    .section h2 {
-      margin-top: 0;
-    }
-
-    .section h3 {
-      margin-top: 24px;
-    }
-
-    .notice {
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: #fff8e8;
-      border: 1px solid #f0dca0;
-      font-size: 0.95rem;
-    }
-
-    .footer {
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-
-    a { color: var(--primary); }
-
-    code {
-      background: #eef2f8;
-      padding: 1px 5px;
-      border-radius: 4px;
-    }
-  </style>
+<meta charset="utf-8">
+<title>Harness corrector CA</title>
+<style>body{font-family:monospace;font-size:12px;white-space:pre-wrap}</style>
 </head>
 <body>
-  <div class="wrap">
-    <section class="hero">
-      <span class="badge">Extensió no oficial per a la UPF</span>
-      <h1>Exportador d'horari i calendari UPF</h1>
-      <p class="subtitle">
-        Extensió de Chrome per exportar l'horari de classes de la Universitat Pompeu Fabra
-        com a arxiu <code>.ics</code> o sincronitzar-lo directament amb Google Calendar.
-      </p>
-
-      <ul class="features">
-        <li><strong>Mode manual:</strong> descarrega un arxiu <code>.ics</code> i importa'l al calendari que prefereixis.</li>
-        <li><strong>Mode automàtic:</strong> connecta el teu compte de Google i sincronitza les assignatures seleccionades.</li>
-        <li><strong>Personalització:</strong> tria matèries, dates, colors i format dels títols dels esdeveniments.</li>
-      </ul>
-
-      <p class="notice" style="margin-top: 20px;">
-        Aquesta extensió no està afiliada, avalada ni mantinguda per la Universitat Pompeu Fabra.
-      </p>
-
-      <div class="actions">
-        <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/ijndcdclgmgbmdmcppklikbmdgbapaig" target="_blank" rel="noopener noreferrer">
-          Instal·lar des de Chrome Web Store
-        </a>
-        <a class="btn btn-secondary" href="#privacidad">
-          Política de privacitat
-        </a>
-      </div>
-    </section>
-
-    <section class="section">
-      <h2>Què fa l'extensió</h2>
-      <p>
-        L'extensió llegeix el calendari de la UPF des de la pàgina oberta a la
-        <strong>secretaria virtual</strong> o <strong>gestió acadèmica</strong>, només quan l'usuari
-        l'executa voluntàriament. No funciona en segon pla ni sense interacció de l'usuari.
-      </p>
-      <p>
-        Si l'usuari activa la sincronització amb Google Calendar, l'extensió demana autorització OAuth
-        per crear, actualitzar o eliminar esdeveniments al calendari de Google de l'usuari, únicament
-        per a les assignatures i dates que aquest seleccioni.
-      </p>
-      <p>
-        L'extensió no opera servidors propis. No ven dades ni utilitza analítiques, publicitat ni seguiment.
-      </p>
-    </section>
-
-    <section class="section" id="privacidad">
-      <h2>Política de privacitat</h2>
-      <p><em>Última actualització: 28 d'agost de 2026</em></p>
-
-      <h3>Resum</h3>
-      <ul>
-        <li>La lectura de l'horari UPF es fa al navegador de l'usuari.</li>
-        <li>No es venen dades ni s'utilitzen analítiques, publicitat ni seguiment.</li>
-        <li>No hi ha servidors propis que emmagatzemin horaris o credencials.</li>
-        <li>La sincronització amb Google Calendar només passa si l'usuari connecta el compte i prem sincronitzar.</li>
-      </ul>
-
-      <h3>Horari UPF</h3>
-      <p>
-        Quan l'usuari utilitza l'extensió en una pàgina compatible de la UPF, aquesta llegeix els
-        esdeveniments visibles en aquella sessió (assignatures, dates, hores, aules, grups i metadades
-        relacionades) per generar l'arxiu <code>.ics</code> o sincronitzar amb Google Calendar.
-      </p>
-
-      <h3>Preferències locals</h3>
-      <p>L'extensió pot desar al navegador:</p>
-      <ul>
-        <li>idioma, mode fosc i mode d'exportació preferit;</li>
-        <li>dates, matèries seleccionades i opcions d'exportació;</li>
-        <li>format personalitzat dels títols;</li>
-        <li>colors per matèria o tipus d'esdeveniment (mode Google Calendar).</li>
-      </ul>
-
-      <h3>Mode manual (.ics)</h3>
-      <p>
-        Els arxius <code>.ics</code> es generen localment i es descarreguen al dispositiu de l'usuari.
-        L'extensió no puja el calendari a cap servidor propi.
-      </p>
-
-      <h3>Mode automàtic (Google Calendar)</h3>
-      <p>
-        Si l'usuari connecta Google, l'extensió utilitza OAuth per enviar a
-        <strong>Google Calendar</strong> només els esdeveniments que decideix exportar o sincronitzar:
-      </p>
-      <ul>
-        <li>títol, data i hora d'inici i fi;</li>
-        <li>descripció (si l'usuari activa aquesta opció);</li>
-        <li>color o etiqueta (si l'usuari la configura);</li>
-        <li>identificador intern per actualitzar o eliminar esdeveniments ja sincronitzats.</li>
-      </ul>
-      <p>
-        L'extensió també pot llegir el correu del compte connectat per mostrar amb quin compte està
-        vinculada. Aquesta dada no s'envia a servidors del desenvolupador.
-      </p>
-      <p>
-        El token d'accés i la informació mínima de connexió es desen localment al navegador.
-        L'usuari pot desconnectar el compte en qualsevol moment des de l'extensió.
-      </p>
-      <p>
-        Google tracta aquestes dades segons la seva política:
-        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">policies.google.com/privacy</a>
-      </p>
-
-      <h3>Dominis i permisos</h3>
-      <p>L'extensió només declara accés a:</p>
-      <ul>
-        <li><code>secretariavirtual.upf.edu</code></li>
-        <li><code>gestioacademica.upf.edu</code></li>
-        <li><code>www.googleapis.com</code> (només si l'usuari autoritza Google Calendar)</li>
-        <li><code>accounts.google.com</code> (només per a OAuth)</li>
-      </ul>
-
-      <h3>Dades que no es recullen</h3>
-      <ul>
-        <li>contrasenyes de la UPF o de Google;</li>
-        <li>contingut acadèmic fora del necessari per exportar o sincronitzar el que l'usuari tria;</li>
-        <li>dades de navegació amb finalitats publicitàries.</li>
-      </ul>
-
-      <h3>Conservació i eliminació</h3>
-      <p>Les dades locals s'eliminen si l'usuari:</p>
-      <ul>
-        <li>reinicia l'extensió des de la configuració;</li>
-        <li>es desconnecta de Google Calendar;</li>
-        <li>desinstal·la l'extensió o esborra les dades d'extensions a Chrome.</li>
-      </ul>
-
-      <h3>Contacte</h3>
-      <p>
-        Consultes sobre privacitat:
-        <a href="mailto:upfcalendarexporter@gmail.com">upfcalendarexporter@gmail.com</a>
-      </p>
-    </section>
-
-    <p class="footer">
-      Exportador d'horari i calendari UPF ·
-      <a href="https://chromewebstore.google.com/detail/ijndcdclgmgbmdmcppklikbmdgbapaig" target="_blank" rel="noopener noreferrer">Chrome Web Store</a>
-    </p>
-  </div>
+<div id="status">carregant scripts...</div>
+<pre id="out"></pre>
+<script>
+  // Shim chrome.runtime per al motor fora de l'extensió
+  globalThis.chrome = {
+    runtime: {
+      getURL(path) {
+        const value = String(path || "");
+        return new URL(value.startsWith("src/") ? `../${value}` : value, location.href).href;
+      },
+      getManifest() {
+        return { version: "9.6.104", version_name: "9.6.104-eagles", manifest_version: 3, name: "Harness" };
+      }
+    }
+  };
+</script>
+<script src="../src/ca-eagles-decoder.js?v=p4d-eagles"></script>
+<script src="../src/ca-pos-dict.js"></script>
+<script src="../src/ca-morfologik-fsa.js"></script>
+<script src="../src/ca-hunspell-speller.js"></script>
+<script src="../src/ca-frequency-index.js"></script>
+<script src="../src/ca-diacritics-pos.js"></script>
+<script src="../src/ca-archaic-filter.js"></script>
+<script src="../src/ca-verb-synthesis.js"></script>
+<script src="../src/ca-multiword-merge.js"></script>
+<script src="../src/ca-disambiguation-selectors.js"></script>
+<script src="../src/language-engine.js?v=p4d-eagles-final"></script>
+<script src="run.js"></script>
 </body>
 </html>
