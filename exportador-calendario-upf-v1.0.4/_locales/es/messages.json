@@ -1,0 +1,494 @@
+{
+  "allSubjects": {
+    "message": "Todas"
+  },
+  "appResetDone": {
+    "message": "Se ha reiniciado la extensión y se han restaurado los valores por defecto."
+  },
+  "appSubtitle": {
+    "message": "Exporta tus clases y exámenes a Google Calendar o como archivo .ics."
+  },
+  "appTitle": {
+    "message": "Exportador de horario y calendario UPF"
+  },
+  "appearance": {
+    "message": "Apariencia"
+  },
+  "blockHint": {
+    "message": "Arrastra los bloques según el orden en que quieres que aparezcan en el título del evento."
+  },
+  "calendarName": {
+    "message": "Nombre del calendario"
+  },
+  "createdMany": {
+    "message": "Archivos generados correctamente."
+  },
+  "createdOne": {
+    "message": "Archivo generado correctamente."
+  },
+  "creating": {
+    "message": "Creando archivo .ics..."
+  },
+  "darkModeLabel": {
+    "message": "Modo oscuro"
+  },
+  "descriptionBuilding": {
+    "message": "Edificio"
+  },
+  "descriptionComment": {
+    "message": "Comentario"
+  },
+  "descriptionGroup": {
+    "message": "Grupo"
+  },
+  "descriptionObservation": {
+    "message": "Observación"
+  },
+  "descriptionRoom": {
+    "message": "Aula"
+  },
+  "descriptionType": {
+    "message": "Tipo"
+  },
+  "darkModeOff": {
+    "message": "Activar modo oscuro"
+  },
+  "darkModeOn": {
+    "message": "Desactivar modo oscuro"
+  },
+  "detectSubjects": {
+    "message": "Detectar materias"
+  },
+  "detecting": {
+    "message": "Detectando materias..."
+  },
+  "endDate": {
+    "message": "Fecha final"
+  },
+  "error": {
+    "message": "Error"
+  },
+  "errorCalendarName": {
+    "message": "Pon un nombre para el calendario."
+  },
+  "errorDateOrder": {
+    "message": "La fecha final no puede ser anterior a la fecha inicial."
+  },
+  "errorDates": {
+    "message": "Elige fecha inicial y fecha final."
+  },
+  "errorFileName": {
+    "message": "Pon un nombre para el archivo."
+  },
+  "errorNoSubjectsSelected": {
+    "message": "No hay ninguna materia seleccionada."
+  },
+  "errorNoEventsToExport": {
+    "message": "No hay ningún evento para exportar en este rango y con esta selección."
+  },
+  "errorOpenUpf": {
+    "message": "Abre primero el calendario de la UPF en esta pestaña."
+  },
+  "eventFormatTitle": {
+    "message": "Formato de eventos"
+  },
+  "examFormat": {
+    "message": "Examen"
+  },
+  "exportIcs": {
+    "message": "Exportar .ics"
+  },
+  "exported": {
+    "message": "Eventos exportados"
+  },
+  "exportedSubjects": {
+    "message": "Materias exportadas"
+  },
+  "extDescription": {
+    "message": "Exporta el calendario de la UPF a Google Calendar o como archivo .ics."
+  },
+  "extName": {
+    "message": "Exportador de horario y calendario UPF"
+  },
+  "extensionVersion": {
+    "message": "Versión"
+  },
+  "fileName": {
+    "message": "Nombre del archivo"
+  },
+  "fmtRoomSubject": {
+    "message": "Aula | asignatura"
+  },
+  "fmtRoomTypeSubject": {
+    "message": "Aula | TIPO asignatura"
+  },
+  "fmtSubjectOnly": {
+    "message": "Solo asignatura"
+  },
+  "fmtSubjectRoom": {
+    "message": "Asignatura | aula"
+  },
+  "fmtTypeSubjectRoom": {
+    "message": "TIPO Asignatura | aula"
+  },
+  "formatPreviewExam": {
+    "message": "Examen"
+  },
+  "formatPreviewSeminar": {
+    "message": "Seminario"
+  },
+  "formatPreviewTheory": {
+    "message": "Teoría"
+  },
+  "formatPreviewLabel": {
+    "message": "Ejemplo:"
+  },
+  "formatBlockGearLabel": {
+    "message": "Personalizar bloque"
+  },
+  "formatBlockTitleEnabled": {
+    "message": "Título habilitado"
+  },
+  "formatBlockTitleDisabled": {
+    "message": "Título deshabilitado"
+  },
+  "formatBlockCustomText": {
+    "message": "Texto personalizado"
+  },
+  "formatBlockGroupHint": {
+    "message": "El prefijo se añade al número de grupo. Ej.: Grupo: o G:"
+  },
+  "formatBlockRoomHint": {
+    "message": "Puedes añadir un prefijo como Aula o un texto al final."
+  },
+  "formatBlockSubjectHint": {
+    "message": "Añade texto antes o después del nombre de la asignatura."
+  },
+  "formatBlockPrefix": {
+    "message": "Prefijo"
+  },
+  "formatBlockSuffix": {
+    "message": "Sufijo"
+  },
+  "formatBlockReset": {
+    "message": "Restablecer"
+  },
+  "formatResetAll": {
+    "message": "Restablecer formato"
+  },
+  "formatResetAllDone": {
+    "message": "Se ha restablecido el formato por defecto."
+  },
+  "help1": {
+    "message": "Entra en la <a href=\"https://secretariavirtual.upf.edu\" target=\"_blank\" rel=\"noopener noreferrer\"><strong>secretaría virtual de la UPF</strong></a> <strong>(recomendado para más precisión)</strong> o en <a href=\"https://gestioacademica.upf.edu/pds/consultaPublica/look[conpub]InicioPubHora?entradaPublica=true&idiomaPais=ca.ES\" target=\"_blank\" rel=\"noopener noreferrer\"><strong>gestioacadémica</strong></a>."
+  },
+  "help2": {
+    "message": "Abre el <strong>calendario de clases</strong>."
+  },
+  "help3": {
+    "message": "Elige <strong>fecha inicial</strong> y <strong>fecha final</strong>."
+  },
+  "help4": {
+    "message": "Pulsa <strong>Detectar materias</strong>."
+  },
+  "help5": {
+    "message": "Marca las materias que quieres exportar."
+  },
+  "help6": {
+    "message": "Activa <strong>Crear un .ics por cada materia seleccionada</strong> si quieres importar cada materia en un calendario distinto."
+  },
+  "help7": {
+    "message": "Pulsa <strong>Exportar .ics</strong>."
+  },
+  "help8": {
+    "message": "El archivo <strong>.ics</strong> es un archivo de calendario; en teoría debería funcionar en cualquier aplicación de calendario, aunque solo se ha probado en profundidad en <strong>Google Calendar</strong>."
+  },
+  "help9": {
+    "message": "Para importarlo en <strong>Google Calendar</strong>, ve a <strong>Configuración → Importar y exportar → Importar</strong>, selecciona el archivo <strong>.ics</strong> y elige el calendario donde quieres añadir los eventos."
+  },
+  "helpImportant": {
+    "message": "<strong>IMPORTANTE:</strong> Para colores en Google Calendar, crea un calendario por materia y pon un color distinto a cada calendario. Luego importa cada .ics de cada materia en su calendario correspondiente."
+  },
+  "howToTitle": {
+    "message": "Cómo usarlo"
+  },
+  "howToExpand": {
+    "message": "Mostrar instrucciones"
+  },
+  "manualStepHowTo": {
+    "message": "1. Cómo usarlo"
+  },
+  "manualStepDates": {
+    "message": "2. Fecha inicial y final"
+  },
+  "manualStepSubjects": {
+    "message": "3. Detecta las materias"
+  },
+  "manualStepOptions": {
+    "message": "4. Opciones y formato de los eventos"
+  },
+  "ignored": {
+    "message": "Elementos ignorados"
+  },
+  "importErrorNote": {
+    "message": "Si Google Calendar muestra el error <strong>“No hemos podido importar este archivo. Vuelve a intentarlo dentro de un rato.”</strong>, espera 10 segundos y vuelve a pulsar importar."
+  },
+  "includeDescription": {
+    "message": "Incluir descripción extensiva"
+  },
+  "includeHolidays": {
+    "message": "Incluir festivos y vacaciones"
+  },
+  "language": {
+    "message": "Idioma"
+  },
+  "noSubjects": {
+    "message": "Ninguna"
+  },
+  "noSubjectsInRange": {
+    "message": "No se han detectado materias en este rango."
+  },
+  "openUpf": {
+    "message": "Abrir UPF"
+  },
+  "pageNotUpf": {
+    "message": "No estás en el horario de la <a href=\"https://secretariavirtual.upf.edu\" target=\"_blank\" rel=\"noopener noreferrer\">secretaría virtual de la UPF</a> o de <a href=\"https://gestioacademica.upf.edu/pds/consultaPublica/look[conpub]InicioPubHora?entradaPublica=true&idiomaPais=ca.ES\" target=\"_blank\" rel=\"noopener noreferrer\">gestioacadémica</a>. Abre el calendario y vuelve a pulsar la extensión."
+  },
+  "pageUpf": {
+    "message": "Página UPF detectada. Puedes exportar usando tu sesión abierta."
+  },
+  "preparing": {
+    "message": "Preparando exportación..."
+  },
+  "privacyNotice": {
+    "message": "La extensión procesa los datos localmente en el navegador. No recopila ni vende datos personales. La sincronización con Google Calendar envía solo los eventos que exportas a tu cuenta de Google."
+  },
+  "privacyPolicyLink": {
+    "message": "Política de privacidad"
+  },
+  "reading": {
+    "message": "Leyendo eventos desde la sesión abierta en la UPF..."
+  },
+  "ready": {
+    "message": "Listo."
+  },
+  "received": {
+    "message": "Eventos recibidos"
+  },
+  "reset": {
+    "message": "Restablecer"
+  },
+  "resetExtension": {
+    "message": "Reiniciar extensión"
+  },
+  "save": {
+    "message": "Guardar"
+  },
+  "seminarFormat": {
+    "message": "Seminario"
+  },
+  "settingsSaved": {
+    "message": "Configuración guardada."
+  },
+  "settingsTitle": {
+    "message": "Configuración"
+  },
+  "splitBySubject": {
+    "message": "Crear un .ics por cada materia seleccionada"
+  },
+  "startDate": {
+    "message": "Fecha inicial"
+  },
+  "subjectsDetected": {
+    "message": "Materias detectadas"
+  },
+  "subjectsEmpty": {
+    "message": "Aún no hay materias detectadas."
+  },
+  "subjectsSubtitle": {
+    "message": "Pulsa “Detectar materias” para elegir qué quieres exportar."
+  },
+  "subjectsTitle": {
+    "message": "Materias"
+  },
+  "theoryFormat": {
+    "message": "Teoría"
+  },
+  "titleOrder": {
+    "message": "Orden del título"
+  },
+  "titleOrderHelp": {
+    "message": "Mueve los bloques para decidir el orden del título."
+  },
+  "googleRedirectMismatch": {
+    "message": "Error redirect_uri_mismatch: falta configurar Google Cloud."
+  },
+  "googleRedirectSteps": {
+    "message": "Crea una credencial de aplicación web y añade esta URI exacta en las URIs de redirección autorizadas. Usa el Client ID web en oauth-config.js."
+  },
+  "googleRedirectUri": {
+    "message": "URI de redireccion"
+  },
+  "googleCalendarCreated": {
+    "message": "Se ha creado un calendario nuevo"
+  },
+  "googleCalendarUsed": {
+    "message": "Calendario"
+  },
+  "googleFailed": {
+    "message": "Eventos con error"
+  },
+  "googleConnected": {
+    "message": "Conectado con Google Calendar."
+  },
+  "googleConnectedAs": {
+    "message": "Conectado como"
+  },
+  "googleConnecting": {
+    "message": "Conectando con Google..."
+  },
+  "googleCreated": {
+    "message": "Eventos creados"
+  },
+  "googleDisconnected": {
+    "message": "Desconectado de Google Calendar."
+  },
+  "googleHint": {
+    "message": "Detecta las materias primero. La sincronización crea o usa el calendario que indiques."
+  },
+  "googleNotConnected": {
+    "message": "Desconectado de Google Calendar."
+  },
+  "googleSyncDone": {
+    "message": "Sincronización completada."
+  },
+  "googleSyncing": {
+    "message": "Sincronizando con Google Calendar..."
+  },
+  "googleTitle": {
+    "message": "Google Calendar"
+  },
+  "googleUpdated": {
+    "message": "Eventos actualizados"
+  },
+  "connectGoogle": {
+    "message": "Conectar con Google"
+  },
+  "disconnectGoogle": {
+    "message": "Desconectar"
+  },
+  "syncGoogle": {
+    "message": "Sincronizar con Google Calendar"
+  },
+  "modeManualTitle": {
+    "message": "Modo manual"
+  },
+  "modeManualHint": {
+    "message": "Descarga el archivo .ics e impórtalo en tu calendario preferido."
+  },
+  "modeGoogleTitle": {
+    "message": "Modo automático"
+  },
+  "modeGoogleHint": {
+    "message": "Sincroniza el horario directamente con tu Google Calendar."
+  },
+  "googleBetaNotice": {
+    "message": "Modo automático en pruebas: la sincronización con Google Calendar puede que aún no funcione correctamente."
+  },
+  "googleStepConnect": {
+    "message": "1. Conecta la cuenta Google"
+  },
+  "googleStepConnectHint": {
+    "message": "Necesario para sincronizar eventos con tu cuenta de Google."
+  },
+  "googleStepCalendarName": {
+    "message": "2. Nombre del calendario"
+  },
+  "googleCalendarNameHint": {
+    "message": "Si lo dejas vacío, se usará el nombre predeterminado."
+  },
+  "googleCalendarNamePlaceholder": {
+    "message": "Horario UPF"
+  },
+  "googleStepDates": {
+    "message": "3. Fecha inicial y final"
+  },
+  "googleStepSubjects": {
+    "message": "4. Detecta las materias y elige colores"
+  },
+  "googlePickColor": {
+    "message": "Elegir color"
+  },
+  "googleAltColorToggle": {
+    "message": "Color distinto"
+  },
+  "googleColorSeminar": {
+    "message": "Seminarios"
+  },
+  "googleColorExam": {
+    "message": "Exámenes"
+  },
+  "googleExpandSubjectTypes": {
+    "message": "Mostrar opciones de seminarios y exámenes"
+  },
+  "googleStepOptions": {
+    "message": "5. Opciones y formato de los eventos"
+  },
+  "googleStepColors": {
+    "message": "4. Colores por materia (opcional)"
+  },
+  "googleStepColorsHint": {
+    "message": "Asigna un color a cada materia en el calendario de Google."
+  },
+  "googleStepColorsEmpty": {
+    "message": "Detecta las materias para elegir colores."
+  },
+  "unofficialNotice": {
+    "message": "Extensión no oficial. No está afiliada, avalada ni mantenida por la Universitat Pompeu Fabra."
+  },
+  "errorUpfHtml": {
+    "message": "La UPF ha devuelto HTML. Parece que la sesión no está activa."
+  },
+  "errorUpfNotArray": {
+    "message": "La respuesta de la UPF no es una lista de eventos."
+  },
+  "errorUpfFetchFailed": {
+    "message": "No se han podido leer los eventos desde la UPF."
+  },
+  "errorInvalidDate": {
+    "message": "Fecha u hora de evento no válida."
+  },
+  "errorEmptyEventTitle": {
+    "message": "El título del evento está vacío."
+  },
+  "errorGoogleSyncNone": {
+    "message": "No se ha podido sincronizar ningún evento."
+  },
+  "googleDeleted": {
+    "message": "Eventos eliminados"
+  },
+  "resetConfirm": {
+    "message": "¿Quieres reiniciar la extensión y borrar toda la configuración guardada?"
+  },
+  "footerCredit": {
+    "message": "Hecho por: Artur Guasch"
+  },
+  "ariaLanguage": {
+    "message": "Idioma"
+  },
+  "ariaModePicker": {
+    "message": "Modo de exportación"
+  },
+  "ariaCloseSettings": {
+    "message": "Cerrar configuración"
+  },
+  "langOptionCa": {
+    "message": "Català"
+  },
+  "langOptionEs": {
+    "message": "Castellano"
+  },
+  "langOptionEn": {
+    "message": "English"
+  }
+}
