@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "__MSG_extName__",
+  "version": "1.0.4",
+  "description": "__MSG_extDescription__",
+  "action": {
+    "default_title": "__MSG_extName__",
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "scripting",
+    "downloads",
+    "activeTab",
+    "storage",
+    "tabs",
+    "identity"
+  ],
+  "host_permissions": [
+    "https://secretariavirtual.upf.edu/*",
+    "https://gestioacademica.upf.edu/*",
+    "https://www.googleapis.com/*",
+    "https://accounts.google.com/*"
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "default_locale": "ca"
+}

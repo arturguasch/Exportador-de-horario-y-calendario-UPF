@@ -1,0 +1,494 @@
+{
+  "allSubjects": {
+    "message": "Totes"
+  },
+  "appResetDone": {
+    "message": "S’ha reiniciat l’extensió i s’han restaurat els valors per defecte."
+  },
+  "appSubtitle": {
+    "message": "Exporta les teves classes i exàmens a Google Calendar o com arxiu .ics."
+  },
+  "appTitle": {
+    "message": "Exportador d'horari i calendari UPF"
+  },
+  "appearance": {
+    "message": "Aparença"
+  },
+  "blockHint": {
+    "message": "Arrossega els blocs segons l’ordre que vols que aparegui al títol de l’esdeveniment."
+  },
+  "calendarName": {
+    "message": "Nom del calendari"
+  },
+  "createdMany": {
+    "message": "Arxius generats correctament."
+  },
+  "createdOne": {
+    "message": "Arxiu generat correctament."
+  },
+  "creating": {
+    "message": "Creant arxiu .ics..."
+  },
+  "darkModeLabel": {
+    "message": "Mode fosc"
+  },
+  "descriptionBuilding": {
+    "message": "Edifici"
+  },
+  "descriptionComment": {
+    "message": "Comentari"
+  },
+  "descriptionGroup": {
+    "message": "Grup"
+  },
+  "descriptionObservation": {
+    "message": "Observació"
+  },
+  "descriptionRoom": {
+    "message": "Aula"
+  },
+  "descriptionType": {
+    "message": "Tipus"
+  },
+  "darkModeOff": {
+    "message": "Activar mode fosc"
+  },
+  "darkModeOn": {
+    "message": "Desactivar mode fosc"
+  },
+  "detectSubjects": {
+    "message": "Detectar matèries"
+  },
+  "detecting": {
+    "message": "Detectant matèries..."
+  },
+  "endDate": {
+    "message": "Data final"
+  },
+  "error": {
+    "message": "Error"
+  },
+  "errorCalendarName": {
+    "message": "Posa un nom per al calendari."
+  },
+  "errorDateOrder": {
+    "message": "La data final no pot ser anterior a la data inicial."
+  },
+  "errorDates": {
+    "message": "Tria data inicial i data final."
+  },
+  "errorFileName": {
+    "message": "Posa un nom per a l'arxiu."
+  },
+  "errorNoSubjectsSelected": {
+    "message": "No hi ha cap matèria seleccionada."
+  },
+  "errorNoEventsToExport": {
+    "message": "No hi ha cap esdeveniment per exportar en aquest rang i amb aquesta selecció."
+  },
+  "errorOpenUpf": {
+    "message": "Obre primer el calendari de la UPF en aquesta pestanya."
+  },
+  "eventFormatTitle": {
+    "message": "Format dels esdeveniments"
+  },
+  "examFormat": {
+    "message": "Examen"
+  },
+  "exportIcs": {
+    "message": "Exportar .ics"
+  },
+  "exported": {
+    "message": "Esdeveniments exportats"
+  },
+  "exportedSubjects": {
+    "message": "Matèries exportades"
+  },
+  "extDescription": {
+    "message": "Exporta el calendari de la UPF a Google Calendar o com arxiu .ics."
+  },
+  "extName": {
+    "message": "Exportador d'horari i calendari UPF"
+  },
+  "extensionVersion": {
+    "message": "Versió"
+  },
+  "fileName": {
+    "message": "Nom de l'arxiu"
+  },
+  "fmtRoomSubject": {
+    "message": "Aula | assignatura"
+  },
+  "fmtRoomTypeSubject": {
+    "message": "Aula | TIPUS assignatura"
+  },
+  "fmtSubjectOnly": {
+    "message": "Només assignatura"
+  },
+  "fmtSubjectRoom": {
+    "message": "Assignatura | aula"
+  },
+  "fmtTypeSubjectRoom": {
+    "message": "TIPUS Assignatura | aula"
+  },
+  "formatPreviewExam": {
+    "message": "Examen"
+  },
+  "formatPreviewSeminar": {
+    "message": "Seminari"
+  },
+  "formatPreviewTheory": {
+    "message": "Teoria"
+  },
+  "formatPreviewLabel": {
+    "message": "Exemple:"
+  },
+  "formatBlockGearLabel": {
+    "message": "Personalitzar bloc"
+  },
+  "formatBlockTitleEnabled": {
+    "message": "Títol habilitat"
+  },
+  "formatBlockTitleDisabled": {
+    "message": "Títol deshabilitat"
+  },
+  "formatBlockCustomText": {
+    "message": "Text personalitzat"
+  },
+  "formatBlockGroupHint": {
+    "message": "El prefix s'afegeix al número de grup. Ex.: Grupo: o G:"
+  },
+  "formatBlockRoomHint": {
+    "message": "Pots afegir un prefix com Aula o un text fix al final."
+  },
+  "formatBlockSubjectHint": {
+    "message": "Afegeix text abans o després del nom de l'assignatura."
+  },
+  "formatBlockPrefix": {
+    "message": "Prefix"
+  },
+  "formatBlockSuffix": {
+    "message": "Sufix"
+  },
+  "formatBlockReset": {
+    "message": "Restablir"
+  },
+  "formatResetAll": {
+    "message": "Restablir format"
+  },
+  "formatResetAllDone": {
+    "message": "S'ha restablert el format per defecte."
+  },
+  "help1": {
+    "message": "Entra a la <a href=\"https://secretariavirtual.upf.edu\" target=\"_blank\" rel=\"noopener noreferrer\"><strong>secretaria virtual de la UPF</strong></a> <strong>(recomanat per a més precisió)</strong> o a <a href=\"https://gestioacademica.upf.edu/pds/consultaPublica/look[conpub]InicioPubHora?entradaPublica=true&idiomaPais=ca.ES\" target=\"_blank\" rel=\"noopener noreferrer\"><strong>gestió acadèmica</strong></a>."
+  },
+  "help2": {
+    "message": "Obre el <strong>calendari de classes</strong>."
+  },
+  "help3": {
+    "message": "Tria la <strong>data inicial</strong> i la <strong>data final</strong>."
+  },
+  "help4": {
+    "message": "Prem <strong>Detectar matèries</strong>."
+  },
+  "help5": {
+    "message": "Marca les matèries que vols exportar."
+  },
+  "help6": {
+    "message": "Activa <strong>Crear un .ics per cada matèria seleccionada</strong> si vols importar cada matèria en un calendari diferent."
+  },
+  "help7": {
+    "message": "Prem <strong>Exportar .ics</strong>."
+  },
+  "help8": {
+    "message": "L’arxiu <strong>.ics</strong> és un arxiu de calendari, teòricament hauria de funcionar en qualsevol aplicació de calendari, tot i que només ha estat testejat en profunditat al <strong>Google Calendar</strong>."
+  },
+  "help9": {
+    "message": "Per a importar-ho a <strong>Google Calendar</strong>, ves a <strong>Configuració → Importar i exportar → Importar</strong>, selecciona l’arxiu <strong>.ics</strong> i tria el calendari on vols afegir els esdeveniments."
+  },
+  "helpImportant": {
+    "message": "<strong>IMPORTANT:</strong> Per tenir colors a Google Calendar, crea un calendari per matèria i posa un color diferent a cada calendari. Després importa cada .ics de cada matèria al calendari corresponent."
+  },
+  "howToTitle": {
+    "message": "Com fer-ho servir"
+  },
+  "howToExpand": {
+    "message": "Mostra les instruccions"
+  },
+  "manualStepHowTo": {
+    "message": "1. Com fer-ho servir"
+  },
+  "manualStepDates": {
+    "message": "2. Data inicial i final"
+  },
+  "manualStepSubjects": {
+    "message": "3. Detecta les matèries"
+  },
+  "manualStepOptions": {
+    "message": "4. Opcions i format dels esdeveniments"
+  },
+  "ignored": {
+    "message": "Elements ignorats"
+  },
+  "importErrorNote": {
+    "message": "Si Google Calendar mostra l'error <strong>“No hem pogut importar aquest fitxer. Torna-ho a provar d'aquí a una estona.”</strong>, espera 10 segons i torna a prémer importar."
+  },
+  "includeDescription": {
+    "message": "Incloure descripció extensiva"
+  },
+  "includeHolidays": {
+    "message": "Incloure festius i vacances"
+  },
+  "language": {
+    "message": "Idioma"
+  },
+  "noSubjects": {
+    "message": "Cap"
+  },
+  "noSubjectsInRange": {
+    "message": "No s'han detectat matèries en aquest rang."
+  },
+  "openUpf": {
+    "message": "Obrir UPF"
+  },
+  "pageNotUpf": {
+    "message": "No ets a l'horari de la <a href=\"https://secretariavirtual.upf.edu\" target=\"_blank\" rel=\"noopener noreferrer\">secretaria virtual de la UPF</a> o de <a href=\"https://gestioacademica.upf.edu/pds/consultaPublica/look[conpub]InicioPubHora?entradaPublica=true&idiomaPais=ca.ES\" target=\"_blank\" rel=\"noopener noreferrer\">gestió acadèmica</a>. Obre el calendari i torna a prémer l'extensió."
+  },
+  "pageUpf": {
+    "message": "Pàgina UPF detectada. Pots exportar fent servir la sessió oberta."
+  },
+  "preparing": {
+    "message": "Preparant l'exportació..."
+  },
+  "privacyNotice": {
+    "message": "L'extensió processa les dades localment al navegador. No recopila ni ven dades personals. La sincronització amb Google Calendar envia només els esdeveniments que exportes al teu compte de Google."
+  },
+  "privacyPolicyLink": {
+    "message": "Política de privacitat"
+  },
+  "reading": {
+    "message": "Llegint esdeveniments des de la sessió oberta a la UPF..."
+  },
+  "ready": {
+    "message": "Preparat."
+  },
+  "received": {
+    "message": "Esdeveniments rebuts"
+  },
+  "reset": {
+    "message": "Restablir"
+  },
+  "resetExtension": {
+    "message": "Reiniciar extensió"
+  },
+  "save": {
+    "message": "Desar"
+  },
+  "seminarFormat": {
+    "message": "Seminari"
+  },
+  "settingsSaved": {
+    "message": "Configuració desada."
+  },
+  "settingsTitle": {
+    "message": "Configuració"
+  },
+  "splitBySubject": {
+    "message": "Crear un .ics per cada matèria seleccionada"
+  },
+  "startDate": {
+    "message": "Data inicial"
+  },
+  "subjectsDetected": {
+    "message": "Matèries detectades"
+  },
+  "subjectsEmpty": {
+    "message": "Encara no hi ha matèries detectades."
+  },
+  "subjectsSubtitle": {
+    "message": "Prem “Detectar matèries” per triar què vols exportar."
+  },
+  "subjectsTitle": {
+    "message": "Matèries"
+  },
+  "theoryFormat": {
+    "message": "Teoria"
+  },
+  "titleOrder": {
+    "message": "Ordre del títol"
+  },
+  "titleOrderHelp": {
+    "message": "Mou els blocs per decidir l’ordre del títol."
+  },
+  "googleRedirectMismatch": {
+    "message": "Error redirect_uri_mismatch: falta configurar Google Cloud."
+  },
+  "googleRedirectSteps": {
+    "message": "Crea una credencial d'aplicació web i afegeix aquesta URI exacta a les URIs de redirecció autoritzades. Fes servir el Client ID web a oauth-config.js."
+  },
+  "googleRedirectUri": {
+    "message": "URI de redireccio"
+  },
+  "googleCalendarCreated": {
+    "message": "S'ha creat un calendari nou"
+  },
+  "googleCalendarUsed": {
+    "message": "Calendari"
+  },
+  "googleFailed": {
+    "message": "Esdeveniments amb error"
+  },
+  "googleConnected": {
+    "message": "Connectat amb Google Calendar."
+  },
+  "googleConnectedAs": {
+    "message": "Connectat com"
+  },
+  "googleConnecting": {
+    "message": "Connectant amb Google..."
+  },
+  "googleCreated": {
+    "message": "Esdeveniments creats"
+  },
+  "googleDisconnected": {
+    "message": "Desconnectat de Google Calendar."
+  },
+  "googleHint": {
+    "message": "Detecta les matèries primer. La sincronització crea o usa el calendari que indiquis."
+  },
+  "googleNotConnected": {
+    "message": "Desconnectat de Google Calendar."
+  },
+  "googleSyncDone": {
+    "message": "Sincronització completada."
+  },
+  "googleSyncing": {
+    "message": "Sincronitzant amb Google Calendar..."
+  },
+  "googleTitle": {
+    "message": "Google Calendar"
+  },
+  "googleUpdated": {
+    "message": "Esdeveniments actualitzats"
+  },
+  "connectGoogle": {
+    "message": "Connectar amb Google"
+  },
+  "disconnectGoogle": {
+    "message": "Desconnectar"
+  },
+  "syncGoogle": {
+    "message": "Sincronitzar amb Google Calendar"
+  },
+  "modeManualTitle": {
+    "message": "Mode manual"
+  },
+  "modeManualHint": {
+    "message": "Descarrega l'arxiu .ics i importa'l al teu calendari preferit."
+  },
+  "modeGoogleTitle": {
+    "message": "Mode automàtic"
+  },
+  "modeGoogleHint": {
+    "message": "Sincronitza l'horari directament al teu Google calendar."
+  },
+  "googleBetaNotice": {
+    "message": "Mode automàtic en proves: la sincronització amb Google Calendar encara pot no funcionar correctament."
+  },
+  "googleStepConnect": {
+    "message": "1. Connecta el compte Google"
+  },
+  "googleStepConnectHint": {
+    "message": "Necessari per sincronitzar esdeveniments amb el teu compte de Google."
+  },
+  "googleStepCalendarName": {
+    "message": "2. Nom del calendari"
+  },
+  "googleCalendarNameHint": {
+    "message": "Si el deixes buit, s'usarà el nom per defecte."
+  },
+  "googleCalendarNamePlaceholder": {
+    "message": "Horari UPF"
+  },
+  "googleStepDates": {
+    "message": "3. Data inicial i final"
+  },
+  "googleStepSubjects": {
+    "message": "4. Detecta les matèries i tria colors"
+  },
+  "googlePickColor": {
+    "message": "Triar color"
+  },
+  "googleAltColorToggle": {
+    "message": "Color diferent"
+  },
+  "googleColorSeminar": {
+    "message": "Seminaris"
+  },
+  "googleColorExam": {
+    "message": "Exàmens"
+  },
+  "googleExpandSubjectTypes": {
+    "message": "Mostrar opcions de seminaris i exàmens"
+  },
+  "googleStepOptions": {
+    "message": "5. Opcions i format dels esdeveniments"
+  },
+  "googleStepColors": {
+    "message": "4. Colors per matèria (opcional)"
+  },
+  "googleStepColorsHint": {
+    "message": "Assigna un color a cada matèria al calendari de Google."
+  },
+  "googleStepColorsEmpty": {
+    "message": "Detecta les matèries per triar colors."
+  },
+  "unofficialNotice": {
+    "message": "Extensió no oficial. No està afiliada, avalada ni mantinguda per la Universitat Pompeu Fabra."
+  },
+  "errorUpfHtml": {
+    "message": "La UPF ha retornat HTML. Sembla que la sessió no està activa."
+  },
+  "errorUpfNotArray": {
+    "message": "La resposta de la UPF no és una llista d'esdeveniments."
+  },
+  "errorUpfFetchFailed": {
+    "message": "No s'han pogut llegir els esdeveniments des de la UPF."
+  },
+  "errorInvalidDate": {
+    "message": "Data o hora d'esdeveniment no vàlida."
+  },
+  "errorEmptyEventTitle": {
+    "message": "El títol de l'esdeveniment és buit."
+  },
+  "errorGoogleSyncNone": {
+    "message": "No s'ha pogut sincronitzar cap esdeveniment."
+  },
+  "googleDeleted": {
+    "message": "Esdeveniments eliminats"
+  },
+  "resetConfirm": {
+    "message": "Vols reiniciar l'extensió i esborrar tota la configuració desada?"
+  },
+  "footerCredit": {
+    "message": "Fet per: Artur Guasch"
+  },
+  "ariaLanguage": {
+    "message": "Idioma"
+  },
+  "ariaModePicker": {
+    "message": "Mode d'exportació"
+  },
+  "ariaCloseSettings": {
+    "message": "Tancar configuració"
+  },
+  "langOptionCa": {
+    "message": "Català"
+  },
+  "langOptionEs": {
+    "message": "Castellano"
+  },
+  "langOptionEn": {
+    "message": "English"
+  }
+}

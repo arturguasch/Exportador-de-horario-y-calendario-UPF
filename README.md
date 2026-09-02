@@ -1,9 +1,10 @@
-# Exportador d’horari i calendari UPF, versión 1.0.3
+# Exportador d'horari i calendari UPF, versión 1.0.4
 
 Extensión para Chrome y Edge que exporta el horario de clases de la UPF desde Secretaría Virtual o gestioacadémica a archivos `.ics` compatibles con Google Calendar, Apple Calendar, Outlook y otros calendarios.
 
 ## Instalación sencilla
-Añadir la extensión de forma automática des de la chrome webstore
+
+Añadir la extensión de forma automática desde la Chrome Web Store:
 https://chromewebstore.google.com/detail/ijndcdclgmgbmdmcppklikbmdgbapaig?utm_source=item-share-cb
 
 ## Instalación manual
@@ -25,10 +26,23 @@ La mejor solución es:
 3. En la extensión, activar `Crear un .ics por cada materia seleccionada`.
 4. Importar cada `.ics` al calendario correspondiente.
 
+## Cambios en la versión 1.0.4
+
+- Se actualiza la versión del paquete de `1.0.3` a `1.0.4`.
+- Se añaden dos modos de exportación: **modo manual** (`.ics`) y **modo automático** (sincronización con Google Calendar).
+- El modo automático se muestra como funcionalidad **en pruebas**; puede no funcionar correctamente para todos los usuarios mientras se completa la configuración de Google OAuth.
+- Nueva interfaz por pasos para exportar o sincronizar el horario.
+- Personalización del formato de los títulos de eventos (teoría, seminarios y exámenes) con bloques, prefijos, sufijos y texto propio.
+- Detección de materias, selección por asignatura y asignación de colores en el modo automático.
+- Se añaden los permisos `identity` y `tabs`, y acceso a `googleapis.com` y `accounts.google.com` para la sincronización con Google Calendar.
+- Mejoras en la zona horaria `Europe/Madrid` para la exportación `.ics`.
+- Aviso visible en amarillo en el modo automático indicando que la sincronización está en pruebas.
+- Actualización de la política de privacidad para reflejar el uso opcional de Google Calendar.
+
 ## Cambios en la versión 1.0.3
 
 - Se actualiza la versión del paquete de `1.0.2` a `1.0.3`.
-- Se cambia el nombre a `Exportador d’horari i calendari UPF` y se mejora la descripción para SEO.
+- Se cambia el nombre a `Exportador d'horari i calendari UPF` y se mejora la descripción para SEO.
 - Se actualiza el enlace público de gestioacadémica para abrir directamente con entrada pública e idioma catalán.
 - Se elimina el permiso `tabs`; la extensión mantiene `activeTab`, `scripting`, `downloads` y `storage`.
 - Se añade soporte para `https://gestioacademica.upf.edu/*`, además de `https://secretariavirtual.upf.edu/*`.
@@ -51,6 +65,6 @@ La mejor solución es:
 
 Extensión no oficial. No está afiliada, avalada ni mantenida por la Universitat Pompeu Fabra.
 
-La extensión procesa los datos localmente en el navegador. No recopila, vende ni transmite datos personales, credenciales ni información académica a servidores externos.
+La extensión procesa los datos localmente en el navegador. No recopila, vende ni transmite datos personales a servidores propios. La sincronización con Google Calendar solo ocurre si el usuario conecta su cuenta y pulsa sincronizar; en ese caso, los eventos seleccionados se envían a la cuenta de Google del usuario.
 
 Política de privacidad: https://arturguasch.github.io/Exportador-de-horario-y-calendario-UPF/
