@@ -93,7 +93,7 @@
     "message": "Formato de eventos"
   },
   "examFormat": {
-    "message": "Examen"
+    "message": "Exámenes"
   },
   "exportIcs": {
     "message": "Exportar .ics"
@@ -146,6 +146,12 @@
   "formatBlockGearLabel": {
     "message": "Personalizar bloque"
   },
+  "formatBlockMoveLeft": {
+    "message": "Mover bloque a la izquierda"
+  },
+  "formatBlockMoveRight": {
+    "message": "Mover bloque a la derecha"
+  },
   "formatBlockTitleEnabled": {
     "message": "Título habilitado"
   },
@@ -160,6 +166,12 @@
   },
   "formatBlockRoomHint": {
     "message": "Puedes añadir un prefijo como Aula o un texto al final."
+  },
+  "formatBlockRoomSeparators": {
+    "message": "Separar el aula con \"|\""
+  },
+  "formatBlockSeparators": {
+    "message": "Separar con \"|\""
   },
   "formatBlockSubjectHint": {
     "message": "Añade texto antes o después del nombre de la asignatura."
@@ -281,14 +293,11 @@
   "resetExtension": {
     "message": "Reiniciar extensión"
   },
-  "save": {
-    "message": "Guardar"
+  "reportBug": {
+    "message": "Reportar un error"
   },
   "seminarFormat": {
-    "message": "Seminario"
-  },
-  "settingsSaved": {
-    "message": "Configuración guardada."
+    "message": "Seminarios"
   },
   "settingsTitle": {
     "message": "Configuración"
@@ -312,7 +321,7 @@
     "message": "Materias"
   },
   "theoryFormat": {
-    "message": "Teoría"
+    "message": "Clases de teoría"
   },
   "titleOrder": {
     "message": "Orden del título"
@@ -338,6 +347,12 @@
   "googleFailed": {
     "message": "Eventos con error"
   },
+  "googleFailedList": {
+    "message": "Eventos que han fallado"
+  },
+  "googleFailedMore": {
+    "message": "...y {n} más"
+  },
   "googleConnected": {
     "message": "Conectado con Google Calendar."
   },
@@ -361,6 +376,42 @@
   },
   "googleSyncDone": {
     "message": "Sincronización completada."
+  },
+  "googleSyncDoneSuccess": {
+    "message": "Sincronización completada exitosamente"
+  },
+  "googleSyncPartial": {
+    "message": "⚠️ Sincronización completada con avisos"
+  },
+  "googleSyncFailed": {
+    "message": "La sincronización no se ha podido completar"
+  },
+  "exportDoneSuccess": {
+    "message": "Exportación completada exitosamente"
+  },
+  "supportThanks": {
+    "message": "Esta extensión es gratuita. Si te ha ayudado y quieres apoyar el mantenimiento:"
+  },
+  "supportThanksLink": {
+    "message": "buymeacoffee.com/openextensions"
+  },
+  "supportContactBefore": {
+    "message": "Si el problema continúa, escribe a"
+  },
+  "supportContactAfter": {
+    "message": "."
+  },
+  "supportContactSubject": {
+    "message": "Ayuda Exportador calendario UPF"
+  },
+  "supportProjectLink": {
+    "message": "Apoyar"
+  },
+  "supportBannerTitle": {
+    "message": "Esta extensión es gratuita"
+  },
+  "supportBannerText": {
+    "message": "Si te ha ahorrado tiempo, cualquier apoyo ayuda a cubrir los gastos de mantenimiento."
   },
   "googleSyncing": {
     "message": "Sincronizando con Google Calendar..."
@@ -393,7 +444,55 @@
     "message": "Sincroniza el horario directamente con tu Google Calendar."
   },
   "googleBetaNotice": {
-    "message": "Modo automático en pruebas: la sincronización con Google Calendar puede que aún no funcione correctamente."
+    "message": ""
+  },
+  "syncProgressLabel": {
+    "message": "Sincronizando..."
+  },
+  "syncProgressPreparing": {
+    "message": "Preparando sincronización..."
+  },
+  "syncProgressConfirm": {
+    "message": "Calendario existente detectado"
+  },
+  "syncProgressClearing": {
+    "message": "Borrando eventos previos..."
+  },
+  "syncProgressCleanup": {
+    "message": "Limpiando eventos antiguos..."
+  },
+  "syncClearExisting": {
+    "message": "Ya existe el calendario «{name}». ¿Quieres borrar los eventos previos creados por la extensión antes de sincronizar?"
+  },
+  "syncClearExistingTracked": {
+    "message": "Ya existe el calendario «{name}» ({n} eventos previos). ¿Quieres borrarlos antes de sincronizar?"
+  },
+  "syncClearExistingHint": {
+    "message": "Elige si quieres partir de cero o conservar y actualizar los eventos existentes."
+  },
+  "syncClearYes": {
+    "message": "Borrarlos y sincronizar"
+  },
+  "syncClearNo": {
+    "message": "Conservarlos y sincronizar"
+  },
+  "syncStop": {
+    "message": "Detener sincronización"
+  },
+  "syncCancelled": {
+    "message": "Sincronización detenida."
+  },
+  "syncProgressDone": {
+    "message": "Sincronización completada"
+  },
+  "syncProgressError": {
+    "message": "Error durante la sincronización"
+  },
+  "googleSyncKeepOpen": {
+    "message": "⚠️Sincronizando... No cierres la extensión hasta que termine el proceso⚠️"
+  },
+  "errorGoogleReconnect": {
+    "message": "La sesión de Google ha caducado. Vuelve a conectar la cuenta y sincroniza de nuevo."
   },
   "googleStepConnect": {
     "message": "1. Conecta la cuenta Google"

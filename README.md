@@ -1,6 +1,6 @@
-# Exportador d'horari i calendari UPF, versión 1.0.4
+# Exportador d'horari i calendari UPF, versión 1.1.2
 
-Extensión para Chrome y Edge que exporta el horario de clases de la UPF desde Secretaría Virtual o gestioacadémica a archivos `.ics` compatibles con Google Calendar, Apple Calendar, Outlook y otros calendarios.
+Extensión para Chrome y Edge que exporta el horario de clases de la UPF desde Secretaría Virtual o gestioacadémica a archivos `.ics` compatibles con Google Calendar, Apple Calendar, Outlook y otros calendarios, o lo sincroniza directamente con Google Calendar.
 
 ## Instalación sencilla
 
@@ -25,6 +25,37 @@ La mejor solución es:
 2. Asignar un color a cada calendario.
 3. En la extensión, activar `Crear un .ics por cada materia seleccionada`.
 4. Importar cada `.ics` al calendario correspondiente.
+
+En el **modo automático**, los colores se pueden elegir directamente por asignatura (y, si se desea, por seminario o examen).
+
+## Cambios en la versión 1.1.2
+
+- Hotfix: se corrige la codificación UTF-8 en textos de formato (acentos y icono ⚙ de ajustes de bloques).
+- Hotfix: se restaura la flecha ▾ del desplegable de color y de las materias.
+- Hotfix: el engranaje de opciones de formato vuelve a abrirse (mismo problema de `resize` del popup).
+
+## Cambios en la versión 1.1.1
+
+- Hotfix: el selector de color por materia se cerraba al instante al abrirse (el popup disparaba `resize` y vaciaba la paleta).
+- Se mantiene la paleta flotante original de la 1.1.0.
+
+## Cambios en la versión 1.1.0
+
+- Se actualiza la versión del paquete de `1.0.4` a `1.1.0`.
+- El **modo automático** (Google Calendar) pasa a ser el modo principal: aparece a la izquierda y es el predeterminado.
+- Se elimina el aviso de que el modo automático está en pruebas.
+- Barra de progreso durante la sincronización (`X/Y`, creados / actualizados / fallidos).
+- Mensajes de estado claros: en curso (amarillo), éxito (verde), avisos o error (amarillo / rojo), con opción de contacto por correo si algo falla.
+- Lista de eventos fallidos tras la sincronización.
+- Si ya existe un calendario con el mismo nombre, la extensión pregunta dentro del panel de progreso si se quieren borrar los eventos previos o conservarlos y sincronizar.
+- Botón de emergencia para detener la sincronización.
+- Formato de títulos con apartados **Classes de teoria**, **Seminaris** y **Exàmens**.
+- Cada bloque de formato puede usar el separador `|` (activo por defecto solo en Aula; si dos bloques vecinos lo tienen, solo aparece un `|`).
+- Enlace fijo para apoyar el mantenimiento del proyecto: https://buymeacoffee.com/openextensions
+- Botón **Reportar un error** en Configuración.
+- Política de privacidad actualizada a `https://upfcalendarexporter.es/#privacidad`.
+- Ajustes de UI: scroll más limpio; idioma y modo oscuro se guardan al momento (sin botón «Desar» redundante).
+- Durante la sincronización con Google hay que mantener el popup abierto hasta que termine.
 
 ## Cambios en la versión 1.0.4
 
@@ -67,4 +98,6 @@ Extensión no oficial. No está afiliada, avalada ni mantenida por la Universita
 
 La extensión procesa los datos localmente en el navegador. No recopila, vende ni transmite datos personales a servidores propios. La sincronización con Google Calendar solo ocurre si el usuario conecta su cuenta y pulsa sincronizar; en ese caso, los eventos seleccionados se envían a la cuenta de Google del usuario.
 
-Política de privacidad: https://arturguasch.github.io/Exportador-de-horario-y-calendario-UPF/
+Política de privacidad: https://upfcalendarexporter.es/#privacidad
+
+Apoyo al proyecto: https://buymeacoffee.com/openextensions

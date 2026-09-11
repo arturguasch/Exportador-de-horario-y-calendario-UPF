@@ -93,7 +93,7 @@
     "message": "Format dels esdeveniments"
   },
   "examFormat": {
-    "message": "Examen"
+    "message": "Exàmens"
   },
   "exportIcs": {
     "message": "Exportar .ics"
@@ -146,6 +146,12 @@
   "formatBlockGearLabel": {
     "message": "Personalitzar bloc"
   },
+  "formatBlockMoveLeft": {
+    "message": "Moure bloc a l’esquerra"
+  },
+  "formatBlockMoveRight": {
+    "message": "Moure bloc a la dreta"
+  },
   "formatBlockTitleEnabled": {
     "message": "Títol habilitat"
   },
@@ -160,6 +166,12 @@
   },
   "formatBlockRoomHint": {
     "message": "Pots afegir un prefix com Aula o un text fix al final."
+  },
+  "formatBlockRoomSeparators": {
+    "message": "Separar l'aula amb \"|\""
+  },
+  "formatBlockSeparators": {
+    "message": "Separar amb \"|\""
   },
   "formatBlockSubjectHint": {
     "message": "Afegeix text abans o després del nom de l'assignatura."
@@ -281,14 +293,11 @@
   "resetExtension": {
     "message": "Reiniciar extensió"
   },
-  "save": {
-    "message": "Desar"
+  "reportBug": {
+    "message": "Reportar un error"
   },
   "seminarFormat": {
-    "message": "Seminari"
-  },
-  "settingsSaved": {
-    "message": "Configuració desada."
+    "message": "Seminaris"
   },
   "settingsTitle": {
     "message": "Configuració"
@@ -312,7 +321,7 @@
     "message": "Matèries"
   },
   "theoryFormat": {
-    "message": "Teoria"
+    "message": "Classes de teoria"
   },
   "titleOrder": {
     "message": "Ordre del títol"
@@ -338,6 +347,12 @@
   "googleFailed": {
     "message": "Esdeveniments amb error"
   },
+  "googleFailedList": {
+    "message": "Esdeveniments que han fallat"
+  },
+  "googleFailedMore": {
+    "message": "...i {n} més"
+  },
   "googleConnected": {
     "message": "Connectat amb Google Calendar."
   },
@@ -361,6 +376,42 @@
   },
   "googleSyncDone": {
     "message": "Sincronització completada."
+  },
+  "googleSyncDoneSuccess": {
+    "message": "Sincronització completada amb èxit"
+  },
+  "googleSyncPartial": {
+    "message": "⚠️ Sincronització completada amb avisos"
+  },
+  "googleSyncFailed": {
+    "message": "No s'ha pogut completar la sincronització"
+  },
+  "exportDoneSuccess": {
+    "message": "Exportació completada amb èxit"
+  },
+  "supportThanks": {
+    "message": "Aquesta extensió és gratuïta. Si t'ha ajudat i vols donar suport al manteniment:"
+  },
+  "supportThanksLink": {
+    "message": "buymeacoffee.com/openextensions"
+  },
+  "supportContactBefore": {
+    "message": "Si el problema continua, escriu a"
+  },
+  "supportContactAfter": {
+    "message": "."
+  },
+  "supportContactSubject": {
+    "message": "Ajuda Exportador calendari UPF"
+  },
+  "supportProjectLink": {
+    "message": "Donar suport"
+  },
+  "supportBannerTitle": {
+    "message": "Aquesta extensió és gratuïta"
+  },
+  "supportBannerText": {
+    "message": "Si t'ha estalviat temps, qualsevol suport ajuda a cobrir les despeses de manteniment."
   },
   "googleSyncing": {
     "message": "Sincronitzant amb Google Calendar..."
@@ -393,7 +444,55 @@
     "message": "Sincronitza l'horari directament al teu Google calendar."
   },
   "googleBetaNotice": {
-    "message": "Mode automàtic en proves: la sincronització amb Google Calendar encara pot no funcionar correctament."
+    "message": ""
+  },
+  "syncProgressLabel": {
+    "message": "Sincronitzant..."
+  },
+  "syncProgressPreparing": {
+    "message": "Preparant sincronització..."
+  },
+  "syncProgressConfirm": {
+    "message": "Calendari existent detectat"
+  },
+  "syncProgressClearing": {
+    "message": "Esborrant esdeveniments previs..."
+  },
+  "syncProgressCleanup": {
+    "message": "Netejant esdeveniments antics..."
+  },
+  "syncClearExisting": {
+    "message": "Ja existeix el calendari «{name}». Vols esborrar els esdeveniments previs creats per l'extensió abans de sincronitzar?"
+  },
+  "syncClearExistingTracked": {
+    "message": "Ja existeix el calendari «{name}» ({n} esdeveniments previs). Vols esborrar-los abans de sincronitzar?"
+  },
+  "syncClearExistingHint": {
+    "message": "Tria si vols començar de zero o conservar i actualitzar els esdeveniments existents."
+  },
+  "syncClearYes": {
+    "message": "Esborrar-los i sincronitzar"
+  },
+  "syncClearNo": {
+    "message": "Conservar-los i sincronitzar"
+  },
+  "syncStop": {
+    "message": "Aturar sincronització"
+  },
+  "syncCancelled": {
+    "message": "Sincronització aturada."
+  },
+  "syncProgressDone": {
+    "message": "Sincronització completada"
+  },
+  "syncProgressError": {
+    "message": "Error durant la sincronització"
+  },
+  "googleSyncKeepOpen": {
+    "message": "⚠️Sincronitzant... No tanquis l'extensió fins que acabi el procés⚠️"
+  },
+  "errorGoogleReconnect": {
+    "message": "La sessió de Google ha caducat. Torna a connectar el compte i sincronitza de nou."
   },
   "googleStepConnect": {
     "message": "1. Connecta el compte Google"

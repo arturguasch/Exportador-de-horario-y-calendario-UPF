@@ -42,7 +42,7 @@ async function loadLocaleMessages(language) {
 const DEFAULT_SETTINGS = {
   language: getDefaultLanguage(),
   themeMode: "system",
-  preferredMode: "manual",
+  preferredMode: "google",
   googleCalendarName: "",
   subjectColors: {},
   subjectTypeColors: {},
@@ -57,7 +57,13 @@ const DEFAULT_SETTINGS = {
 const FORMAT_BLOCK_TOKENS = ["type", "subject", "room", "group"];
 
 function createDefaultFormatBlockSetting(kind, token) {
-  const defaults = { enabled: true, customText: "", prefix: "", suffix: "" };
+  const defaults = {
+    enabled: true,
+    customText: "",
+    prefix: "",
+    suffix: "",
+    pipeSeparators: token === "room",
+  };
   if (token === "group" && kind === "seminar") {
     return { ...defaults, prefix: "G:" };
   }
@@ -80,8 +86,38 @@ const DEFAULT_FORMAT_BLOCK_SETTINGS = createDefaultFormatBlockSettings();
 const EXTENSION_VERSION = chrome.runtime.getManifest().version;
 const SESSION_KEY = "upfSessionState";
 
+// Local copy so the picker never depends on google-calendar.js loading for UI.
+const FALLBACK_COLOR_PRESETS = [
+  { id: "11111111-0001-4000-8000-000000000001", hex: "#AD1457" },
+  { id: "11111111-0002-4000-8000-000000000002", hex: "#D81B60" },
+  { id: "11111111-0003-4000-8000-000000000003", hex: "#E67C73" },
+  { id: "11111111-0004-4000-8000-000000000004", hex: "#D50000" },
+  { id: "11111111-0005-4000-8000-000000000005", hex: "#F4511E" },
+  { id: "11111111-0006-4000-8000-000000000006", hex: "#EF6C00" },
+  { id: "11111111-0007-4000-8000-000000000007", hex: "#F09300" },
+  { id: "11111111-0008-4000-8000-000000000008", hex: "#E4C441" },
+  { id: "11111111-0024-4000-8000-000000000024", hex: "#F6BF26" },
+  { id: "11111111-0009-4000-8000-000000000009", hex: "#C0CA33" },
+  { id: "11111111-0010-4000-8000-000000000010", hex: "#7CB342" },
+  { id: "11111111-0011-4000-8000-000000000011", hex: "#0B8043" },
+  { id: "11111111-0012-4000-8000-000000000012", hex: "#33B679" },
+  { id: "11111111-0013-4000-8000-000000000013", hex: "#009688" },
+  { id: "11111111-0014-4000-8000-000000000014", hex: "#039BE5" },
+  { id: "11111111-0015-4000-8000-000000000015", hex: "#4285F4" },
+  { id: "11111111-0016-4000-8000-000000000016", hex: "#3F51B5" },
+  { id: "11111111-0017-4000-8000-000000000017", hex: "#7986CB" },
+  { id: "11111111-0018-4000-8000-000000000018", hex: "#B39DDB" },
+  { id: "11111111-0019-4000-8000-000000000019", hex: "#8E24AA" },
+  { id: "11111111-0020-4000-8000-000000000020", hex: "#9E69AF" },
+  { id: "11111111-0021-4000-8000-000000000021", hex: "#795548" },
+  { id: "11111111-0022-4000-8000-000000000022", hex: "#616161" },
+  { id: "11111111-0023-4000-8000-000000000023", hex: "#A79B8E" },
+];
+
 function getGoogleColorPresets() {
-  return window.UpfGoogleCalendar?.COLOR_PRESETS || [];
+  const fromApi = window.UpfGoogleCalendar?.COLOR_PRESETS;
+  if (Array.isArray(fromApi) && fromApi.length) return fromApi;
+  return FALLBACK_COLOR_PRESETS;
 }
 
 let settings = structuredClone(DEFAULT_SETTINGS);
@@ -105,6 +141,17 @@ const els = {
   subjectsList: document.getElementById("subjectsList"),
   exportBtn: document.getElementById("exportBtn"),
   syncGoogleBtn: document.getElementById("syncGoogleBtn"),
+  syncProgress: document.getElementById("syncProgress"),
+  syncProgressLabel: document.getElementById("syncProgressLabel"),
+  syncProgressCount: document.getElementById("syncProgressCount"),
+  syncProgressBar: document.getElementById("syncProgressBar"),
+  syncProgressFill: document.getElementById("syncProgressFill"),
+  syncProgressDetail: document.getElementById("syncProgressDetail"),
+  syncConfirmClear: document.getElementById("syncConfirmClear"),
+  syncConfirmClearText: document.getElementById("syncConfirmClearText"),
+  syncClearYesBtn: document.getElementById("syncClearYesBtn"),
+  syncClearNoBtn: document.getElementById("syncClearNoBtn"),
+  syncStopBtn: document.getElementById("syncStopBtn"),
   connectGoogleBtn: document.getElementById("connectGoogleBtn"),
   disconnectGoogleBtn: document.getElementById("disconnectGoogleBtn"),
   googleStatus: document.getElementById("googleStatus"),
@@ -120,7 +167,6 @@ const els = {
   theoryBlocks: document.getElementById("theoryBlocks"),
   seminarBlocks: document.getElementById("seminarBlocks"),
   examBlocks: document.getElementById("examBlocks"),
-  saveSettings: document.getElementById("saveSettings"),
   resetSettings: document.getElementById("resetSettings"),
   extensionVersionValue: document.getElementById("extensionVersionValue"),
   formatPreview: {
@@ -138,6 +184,8 @@ const els = {
   formatBlockPrefix: document.getElementById("formatBlockPrefix"),
   formatBlockSuffixWrap: document.getElementById("formatBlockSuffixWrap"),
   formatBlockSuffix: document.getElementById("formatBlockSuffix"),
+  formatBlockRoomSepWrap: document.getElementById("formatBlockSepWrap"),
+  formatBlockRoomSeparators: document.getElementById("formatBlockSeparators"),
   formatBlockResetBtn: document.getElementById("formatBlockResetBtn"),
   resetFormatSettingsBtn: document.getElementById("resetFormatSettingsBtn"),
   modeManualBtn: document.getElementById("modeManualBtn"),
@@ -153,6 +201,8 @@ const els = {
 let activeColorSubject = null;
 let activeColorKind = "main";
 let colorPaletteBuilt = false;
+let ignoreColorPaletteOutsideClick = false;
+let ignoreFormatBlockOutsideClick = false;
 let activeFormatBlock = null;
 
 function t(key) {
@@ -161,6 +211,7 @@ function t(key) {
 
 function formatErrorMessage(error) {
   const message = String(error?.message || error || "").trim();
+  if (message === "No valid token") return t("errorGoogleReconnect");
   if (message && I18N[message]) return t(message);
   return message;
 }
@@ -248,10 +299,61 @@ function setDefaultTextsForLanguage() {
   }
 }
 
-function setStatus(message, type = "") {
-  els.status.textContent = message || "";
-  els.status.classList.toggle("hidden", !message);
-  els.status.classList.toggle("error", type === "error");
+function setStatus(message, type = "", options = {}) {
+  if (!els.status) return;
+
+  els.status.classList.remove("error", "warning", "success");
+  if (type === "error" || type === "warning" || type === "success") {
+    els.status.classList.add(type);
+  }
+
+  const hasContent = Boolean(message) || options.support || options.contactEmail;
+  els.status.classList.toggle("hidden", !hasContent);
+  els.status.replaceChildren();
+  if (!hasContent) return;
+
+  if (message) {
+    const main = document.createElement("div");
+    main.className = "status-main";
+    main.textContent = message;
+    els.status.append(main);
+  }
+
+  if (options.support) {
+    const support = document.createElement("p");
+    support.className = "status-extra status-support";
+    const before = document.createElement("span");
+    before.textContent = `${t("supportThanks")} `;
+    const link = document.createElement("a");
+    link.href = "https://buymeacoffee.com/openextensions";
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = t("supportThanksLink");
+    support.append(before, link);
+    els.status.append(support);
+  }
+
+  if (options.contactEmail) {
+    const contact = document.createElement("p");
+    contact.className = "status-extra status-contact";
+    const before = document.createElement("span");
+    before.textContent = `${t("supportContactBefore")} `;
+    const link = document.createElement("a");
+    link.href = "mailto:upfcalendarexporter@gmail.com?subject=" + encodeURIComponent(t("supportContactSubject"));
+    link.textContent = "upfcalendarexporter@gmail.com";
+    const after = document.createElement("span");
+    after.textContent = t("supportContactAfter");
+    contact.append(before, link, after);
+    els.status.append(contact);
+  }
+}
+
+function appendStatusDetails(lines) {
+  if (!els.status || !lines?.length) return;
+  const detail = document.createElement("div");
+  detail.className = "status-details";
+  detail.textContent = lines.join("\n");
+  els.status.append(detail);
 }
 
 async function persistSessionState() {
@@ -450,6 +552,10 @@ function setMode(mode, persist = true) {
     els.modeGoogleBtn.setAttribute("aria-pressed", next === "google" ? "true" : "false");
   }
 
+  // Sync banners belong to Google mode; clear leftovers when switching.
+  showSyncProgress(false);
+  setStatus("");
+
   if (next === "manual") {
     closeColorPalette();
   }
@@ -474,7 +580,8 @@ function getSubjectColorPreset(subject, kind = "main") {
 }
 
 function buildColorPaletteGrid() {
-  if (colorPaletteBuilt || !els.colorPaletteGrid) return;
+  if (!els.colorPaletteGrid) return;
+  if (colorPaletteBuilt && els.colorPaletteGrid.childElementCount > 0) return;
 
   const presets = getGoogleColorPresets();
   els.colorPaletteGrid.textContent = "";
@@ -487,6 +594,7 @@ function buildColorPaletteGrid() {
     button.dataset.colorId = color.id;
     button.setAttribute("aria-label", color.hex);
     button.addEventListener("click", async (event) => {
+      event.preventDefault();
       event.stopPropagation();
       if (!activeColorSubject) return;
 
@@ -498,7 +606,7 @@ function buildColorPaletteGrid() {
     els.colorPaletteGrid.append(button);
   }
 
-  colorPaletteBuilt = true;
+  colorPaletteBuilt = presets.length > 0;
 }
 
 function updatePaletteSelection(selectedId) {
@@ -535,6 +643,7 @@ function openColorPalette(subject, anchor, kind = "main") {
 
   buildColorPaletteGrid();
   if (!els.colorPalettePopover) return;
+  if (!els.colorPaletteGrid?.childElementCount) return;
 
   if (
     activeColorSubject === subject &&
@@ -545,9 +654,19 @@ function openColorPalette(subject, anchor, kind = "main") {
     return;
   }
 
+  if (els.colorPalettePopover.parentElement !== document.body) {
+    document.body.append(els.colorPalettePopover);
+  }
+
   activeColorSubject = subject;
   activeColorKind = kind;
   updatePaletteSelection(getColorIdForTarget(subject, kind) || getGoogleColorPresets()[0]?.id);
+
+  // Opening the palette can resize the popup; ignore the same-tick outside click.
+  ignoreColorPaletteOutsideClick = true;
+  setTimeout(() => {
+    ignoreColorPaletteOutsideClick = false;
+  }, 50);
 
   els.colorPalettePopover.classList.remove("hidden");
   els.colorPalettePopover.setAttribute("aria-hidden", "false");
@@ -589,7 +708,7 @@ function createColorPickerTrigger(subject, kind = "main") {
   const chevron = document.createElement("span");
   chevron.className = "color-picker-chevron";
   chevron.setAttribute("aria-hidden", "true");
-  chevron.textContent = "▾";
+  chevron.textContent = "\u25BE";
 
   trigger.append(swatch, chevron);
   trigger.addEventListener("click", (event) => {
@@ -675,7 +794,6 @@ function createSubjectTypeRow(subject, kind) {
   fillSubjectTypeColorSlot(colorSlot, subject, kind, setting.enabled);
 
   row.append(label, createSubjectTypeToggle(subject, kind, colorSlot), colorSlot);
-
   return row;
 }
 
@@ -714,7 +832,7 @@ function createExpandableSubjectCard(subject, flags, open = false) {
   const expandIcon = document.createElement("span");
   expandIcon.className = "subject-expand-icon";
   expandIcon.setAttribute("aria-hidden", "true");
-  expandIcon.textContent = "▾";
+  expandIcon.textContent = "\u25BE";
   expandBtn.append(expandIcon);
 
   expandBtn.addEventListener("click", (event) => {
@@ -843,6 +961,74 @@ async function disconnectGoogle() {
   }
 }
 
+let activeSyncControl = null;
+let syncConfirmWaiter = null;
+
+function makeSyncCancelledError() {
+  const error = new Error("syncCancelled");
+  error.code = "syncCancelled";
+  return error;
+}
+
+function isSyncCancelledError(error) {
+  return error?.code === "syncCancelled" || String(error?.message || error) === "syncCancelled";
+}
+
+function setSyncStopVisible(visible) {
+  els.syncStopBtn?.classList.toggle("hidden", !visible);
+  if (els.syncStopBtn) els.syncStopBtn.disabled = !visible ? false : els.syncStopBtn.disabled;
+  if (visible && els.syncStopBtn) els.syncStopBtn.disabled = false;
+}
+
+function hideSyncConfirmClear() {
+  els.syncConfirmClear?.classList.add("hidden");
+  if (els.syncClearYesBtn) els.syncClearYesBtn.onclick = null;
+  if (els.syncClearNoBtn) els.syncClearNoBtn.onclick = null;
+  syncConfirmWaiter = null;
+}
+
+function requestSyncAbort() {
+  if (!activeSyncControl) return;
+  activeSyncControl.aborted = true;
+  if (els.syncStopBtn) els.syncStopBtn.disabled = true;
+  if (syncConfirmWaiter) {
+    const { reject } = syncConfirmWaiter;
+    hideSyncConfirmClear();
+    reject(makeSyncCancelledError());
+  }
+}
+
+function askClearExistingCalendar(info) {
+  return new Promise((resolve, reject) => {
+    if (!els.syncConfirmClear) {
+      resolve(false);
+      return;
+    }
+
+    const name = info?.calendarName || "Horari UPF";
+    const tracked = Number(info?.trackedCount) || 0;
+    els.syncConfirmClearText.textContent = tracked > 0
+      ? t("syncClearExistingTracked").replace("{name}", name).replace("{n}", String(tracked))
+      : t("syncClearExisting").replace("{name}", name);
+
+    els.syncConfirmClear.classList.remove("hidden");
+    setStatus(t("syncClearExistingHint"), "warning");
+
+    syncConfirmWaiter = { resolve, reject };
+
+    els.syncClearYesBtn.onclick = () => {
+      hideSyncConfirmClear();
+      setStatus(t("googleSyncKeepOpen"), "warning");
+      resolve(true);
+    };
+    els.syncClearNoBtn.onclick = () => {
+      hideSyncConfirmClear();
+      setStatus(t("googleSyncKeepOpen"), "warning");
+      resolve(false);
+    };
+  });
+}
+
 async function syncGoogleCalendar() {
   saveOrderFromContainer("theory");
   saveOrderFromContainer("seminar");
@@ -852,6 +1038,19 @@ async function syncGoogleCalendar() {
 
   els.syncGoogleBtn.disabled = true;
   setStatus(t("googleSyncing"));
+  showSyncProgress(true);
+  updateSyncProgress({
+    phase: "preparing",
+    current: 0,
+    total: 0,
+    created: 0,
+    updated: 0,
+    deleted: 0,
+    failed: 0,
+  });
+
+  activeSyncControl = { aborted: false };
+  setSyncStopVisible(true);
 
   try {
     validateForm();
@@ -860,8 +1059,7 @@ async function syncGoogleCalendar() {
     selectedSubjectsForExport(items);
 
     const calendarName = readGoogleCalendarNameFromForm();
-
-    const result = await window.UpfGoogleCalendar.syncEvents(items, {
+    const job = window.UpfGoogleCalendar.prepareSyncJob(items, {
       shouldExport,
       normalizeSubject,
       makeUid,
@@ -876,22 +1074,152 @@ async function syncGoogleCalendar() {
       calendarName,
     });
 
-    setStatus(
-      `${t("googleSyncDone")}\n` +
-      `${t("googleCalendarUsed")}: ${result.calendarName}\n` +
-      (result.calendarCreated ? `${t("googleCalendarCreated")}\n` : "") +
-      `${t("googleCreated")}: ${result.created}\n` +
-      `${t("googleUpdated")}: ${result.updated}\n` +
-      `${t("ignored")}: ${result.skipped}` +
-      (result.deleted ? `\n${t("googleDeleted")}: ${result.deleted}` : "") +
-      (result.failed ? `\n${t("googleFailed")}: ${result.failed}` : "")
+    if (!job.events.length && !job.prepareFailures?.length) {
+      throw new Error("errorNoEventsToExport");
+    }
+
+    setStatus(t("googleSyncKeepOpen"), "warning");
+    updateSyncProgress({
+      phase: "preparing",
+      current: 0,
+      total: job.events.length,
+      created: 0,
+      updated: 0,
+      deleted: 0,
+      failed: job.prepareFailures?.length || 0,
+    });
+
+    const result = await window.UpfGoogleCalendar.runPreparedSync(
+      job,
+      updateSyncProgress,
+      {
+        interactive: true,
+        shouldAbort: () => Boolean(activeSyncControl?.aborted),
+        confirmClearExisting: askClearExistingCalendar,
+      }
     );
+    applySyncResultToUi(result);
   } catch (error) {
     console.error(error);
-    setStatus(`${t("error")}: ${formatErrorMessage(error)}`, "error");
-  } finally {
+    updateSyncProgress({
+      phase: "error",
+      current: 0,
+      total: 0,
+      created: 0,
+      updated: 0,
+      deleted: 0,
+      failed: 0,
+    });
+    if (isSyncCancelledError(error)) {
+      setStatus(t("syncCancelled"), "warning");
+    } else {
+      setStatus(`${t("error")}: ${formatErrorMessage(error)}`, "error", { contactEmail: true });
+    }
     els.syncGoogleBtn.disabled = false;
+    window.setTimeout(() => showSyncProgress(false), 1800);
+  } finally {
+    activeSyncControl = null;
+    setSyncStopVisible(false);
+    hideSyncConfirmClear();
   }
+}
+
+function applySyncResultToUi(result) {
+  updateSyncProgress({
+    phase: "done",
+    current: result.total,
+    total: result.total,
+    created: result.created,
+    updated: result.updated,
+    deleted: result.deleted,
+    failed: result.failed,
+  });
+
+  const details = [
+    `${t("googleCalendarUsed")}: ${result.calendarName}`,
+    result.calendarCreated ? t("googleCalendarCreated") : "",
+    `${t("googleCreated")}: ${result.created}`,
+    `${t("googleUpdated")}: ${result.updated}`,
+    `${t("ignored")}: ${result.skipped}`,
+    result.deleted ? `${t("googleDeleted")}: ${result.deleted}` : "",
+    result.failed ? `${t("googleFailed")}: ${result.failed}` : "",
+  ].filter(Boolean);
+
+  if (result.failures?.length) {
+    details.push("", `${t("googleFailedList")}:`, formatFailedEvents(result.failures));
+  }
+
+  const succeeded = (Number(result.created) || 0) + (Number(result.updated) || 0) + (Number(result.deleted) || 0);
+  const failed = Number(result.failed) || 0;
+
+  if (failed > 0 && succeeded === 0) {
+    setStatus(t("googleSyncFailed"), "error", { contactEmail: true });
+  } else if (failed > 0) {
+    setStatus(t("googleSyncPartial"), "warning", { contactEmail: true });
+  } else {
+    setStatus(t("googleSyncDoneSuccess"), "success", { support: true });
+  }
+  appendStatusDetails(details);
+
+  els.syncGoogleBtn.disabled = false;
+  window.setTimeout(() => showSyncProgress(false), 1800);
+}
+
+function showSyncProgress(visible) {
+  if (!els.syncProgress) return;
+  els.syncProgress.classList.toggle("hidden", !visible);
+  if (!visible) {
+    if (els.syncProgressFill) els.syncProgressFill.style.width = "0%";
+    if (els.syncProgressBar) els.syncProgressBar.setAttribute("aria-valuenow", "0");
+    if (els.syncProgressCount) els.syncProgressCount.textContent = "0/0";
+    if (els.syncProgressDetail) els.syncProgressDetail.textContent = "";
+    hideSyncConfirmClear();
+    setSyncStopVisible(false);
+  }
+}
+
+function updateSyncProgress(progress = {}) {
+  if (!els.syncProgress) return;
+  const current = Number(progress.current) || 0;
+  const total = Number(progress.total) || 0;
+  const percent = total > 0 ? Math.min(100, Math.round((current / total) * 100)) : (progress.phase === "done" ? 100 : 0);
+
+  if (els.syncProgressFill) els.syncProgressFill.style.width = `${percent}%`;
+  if (els.syncProgressBar) els.syncProgressBar.setAttribute("aria-valuenow", String(percent));
+  if (els.syncProgressCount) {
+    els.syncProgressCount.textContent = total > 0 ? `${current}/${total}` : `${percent}%`;
+  }
+
+  let label = t("syncProgressLabel");
+  if (progress.phase === "preparing") label = t("syncProgressPreparing");
+  if (progress.phase === "confirm") label = t("syncProgressConfirm");
+  if (progress.phase === "clearing") label = t("syncProgressClearing");
+  if (progress.phase === "syncing") label = t("syncProgressLabel");
+  if (progress.phase === "cleanup") label = t("syncProgressCleanup");
+  if (progress.phase === "done") label = t("syncProgressDone");
+  if (progress.phase === "error") label = t("syncProgressError");
+  if (els.syncProgressLabel) els.syncProgressLabel.textContent = label;
+
+  const parts = [];
+  if (progress.created) parts.push(`${t("googleCreated")}: ${progress.created}`);
+  if (progress.updated) parts.push(`${t("googleUpdated")}: ${progress.updated}`);
+  if (progress.deleted) parts.push(`${t("googleDeleted")}: ${progress.deleted}`);
+  if (progress.failed) parts.push(`${t("googleFailed")}: ${progress.failed}`);
+  if (els.syncProgressDetail) els.syncProgressDetail.textContent = parts.join(" · ");
+}
+
+function formatFailedEvents(failures) {
+  const maxShown = 12;
+  const lines = failures.slice(0, maxShown).map((failure, index) => {
+    const label = failure.label || failure.title || "?";
+    const reasonKey = failure.reason || "";
+    const reasonText = reasonKey && t(reasonKey) !== reasonKey ? t(reasonKey) : reasonKey;
+    return `${index + 1}. ${label}${reasonText ? ` — ${reasonText}` : ""}`;
+  });
+  if (failures.length > maxShown) {
+    lines.push(t("googleFailedMore").replace("{n}", String(failures.length - maxShown)));
+  }
+  return lines.join("\n");
 }
 
 function htmlDecode(value) {
@@ -982,6 +1310,12 @@ function normalizeFormatBlockSettings(incoming) {
       }
       if (stored.suffix !== undefined) {
         normalized[kind][token].suffix = normalizeFormatInputText(stored.suffix);
+      }
+      // Room keeps "|" by default; other blocks only if explicitly enabled.
+      if (token === "room") {
+        normalized[kind][token].pipeSeparators = stored.pipeSeparators !== false;
+      } else if (stored.pipeSeparators !== undefined) {
+        normalized[kind][token].pipeSeparators = stored.pipeSeparators === true;
       }
     }
   }
@@ -1092,24 +1426,23 @@ function buildTitleFromTokens(subject, room, type, tokens, group = "", kind = "t
     room: resolveFormatTokenValue("room", room, kind, type),
     group: resolveFormatGroupValue(group, kind),
   };
-  const cleanTokens = (Array.isArray(tokens) && tokens.length ? tokens : ["subject", "room"])
+  const parts = (Array.isArray(tokens) && tokens.length ? tokens : ["subject", "room"])
     .filter((token) => getFormatBlockSetting(kind, token).enabled)
-    .filter((token) => values[token]);
+    .filter((token) => values[token])
+    .map((token) => ({
+      value: values[token],
+      pipe: getFormatBlockSetting(kind, token).pipeSeparators === true,
+    }));
 
-  const roomIndex = cleanTokens.indexOf("room");
+  if (!parts.length) return "";
 
-  if (roomIndex === -1) {
-    return cleanTokens.map((token) => values[token]).join(" ").trim();
+  let title = parts[0].value;
+  for (let i = 1; i < parts.length; i += 1) {
+    // One "|" between neighbors if either side asks for separators (never "||").
+    const usePipe = parts[i - 1].pipe || parts[i].pipe;
+    title += usePipe ? ` | ${parts[i].value}` : ` ${parts[i].value}`;
   }
-
-  const before = cleanTokens.slice(0, roomIndex).map((token) => values[token]).join(" ").trim();
-  const after = cleanTokens.slice(roomIndex + 1).map((token) => values[token]).join(" ").trim();
-  const formattedRoom = values.room;
-
-  if (before && after) return `${before} | ${formattedRoom} | ${after}`;
-  if (before) return `${before} | ${formattedRoom}`;
-  if (after) return `${formattedRoom} | ${after}`;
-  return formattedRoom;
+  return title.trim();
 }
 
 function buildCleanSummary(item) {
@@ -1530,7 +1863,6 @@ async function detectSubjects() {
     els.detectSubjects.disabled = false;
   }
 }
-
 function selectedSubjectsForExport(items) {
   const allInItems = [...new Set(
     items
@@ -1590,11 +1922,12 @@ async function exportCalendar() {
         throw new Error(t("errorNoEventsToExport"));
       }
 
-      setStatus(
-        `${t("createdMany")}\n` +
-        `${t("exportedSubjects")}: ${subjects.length}\n` +
-        `${t("exported")}: ${totalExported}`
-      );
+      setStatus(t("exportDoneSuccess"), "success", { support: true });
+      appendStatusDetails([
+        t("createdMany"),
+        `${t("exportedSubjects")}: ${subjects.length}`,
+        `${t("exported")}: ${totalExported}`,
+      ]);
     } else {
       const result = createIcs(items, {
         includeHolidays: els.includeHolidays.checked,
@@ -1610,16 +1943,17 @@ async function exportCalendar() {
 
       await downloadIcs(result.ics, els.fileName.value.trim());
 
-      setStatus(
-        `${t("createdOne")}\n` +
-        `${t("received")}: ${result.received}\n` +
-        `${t("exported")}: ${result.exported}\n` +
-        `${t("ignored")}: ${result.ignored}`
-      );
+      setStatus(t("exportDoneSuccess"), "success", { support: true });
+      appendStatusDetails([
+        t("createdOne"),
+        `${t("received")}: ${result.received}`,
+        `${t("exported")}: ${result.exported}`,
+        `${t("ignored")}: ${result.ignored}`,
+      ]);
     }
   } catch (error) {
     console.error(error);
-    setStatus(`${t("error")}: ${formatErrorMessage(error)}`, "error");
+    setStatus(`${t("error")}: ${formatErrorMessage(error)}`, "error", { contactEmail: true });
   } finally {
     els.exportBtn.disabled = false;
   }
@@ -1671,6 +2005,13 @@ function syncFormatBlockPopoverFields() {
   els.formatBlockCustomHint.classList.add("hidden");
   els.formatBlockPrefixWrap.classList.toggle("hidden", !visibility.prefix);
   els.formatBlockSuffixWrap.classList.toggle("hidden", !visibility.suffix);
+
+  if (els.formatBlockRoomSepWrap) {
+    els.formatBlockRoomSepWrap.classList.remove("hidden");
+  }
+  if (els.formatBlockRoomSeparators) {
+    els.formatBlockRoomSeparators.checked = config.pipeSeparators === true;
+  }
 }
 
 function positionFormatBlockPopover(anchor) {
@@ -1712,6 +2053,9 @@ function applyFormatBlockPopoverChanges() {
   if (visibility.suffix) {
     config.suffix = normalizeFormatInputText(els.formatBlockSuffix.value);
   }
+  if (els.formatBlockRoomSeparators) {
+    config.pipeSeparators = els.formatBlockRoomSeparators.checked;
+  }
 
   const container = getBlockContainer(kind);
   const item = container?.querySelector(`.block-item[data-token="${token}"]`);
@@ -1732,6 +2076,10 @@ function toggleFormatBlockEnabled() {
 
 function openFormatBlockSettings(kind, token, anchor) {
   activeFormatBlock = { kind, token };
+  ignoreFormatBlockOutsideClick = true;
+  setTimeout(() => {
+    ignoreFormatBlockOutsideClick = false;
+  }, 50);
   syncFormatBlockPopoverFields();
   positionFormatBlockPopover(anchor);
 }
@@ -1773,7 +2121,7 @@ function renderBlockBuilder(kind) {
     gear.type = "button";
     gear.className = "block-gear";
     gear.setAttribute("aria-label", t("formatBlockGearLabel"));
-    gear.textContent = "⚙";
+    gear.textContent = "\u2699";
     gear.addEventListener("mousedown", (event) => event.stopPropagation());
     gear.addEventListener("click", (event) => {
       event.preventDefault();
@@ -1992,7 +2340,7 @@ async function loadSettings() {
     subjectColors: storedSettings.subjectColors || {},
     subjectTypeColors: storedSettings.subjectTypeColors || {},
     googleCalendarName: storedSettings.googleCalendarName ?? DEFAULT_SETTINGS.googleCalendarName,
-    preferredMode: storedSettings.preferredMode === "google" ? "google" : "manual",
+    preferredMode: storedSettings.preferredMode === "manual" ? "manual" : "google",
   };
 
   migrateLegacySubjectColors();
@@ -2044,26 +2392,6 @@ function closeSettings() {
   els.settingsModal.setAttribute("aria-hidden", "true");
 }
 
-async function saveSettingsFromForm() {
-  const previousLanguage = settings.language;
-  settings.language = els.languageSelect.value;
-  await loadLocaleMessages(settings.language);
-
-  saveOrderFromContainer("theory");
-  saveOrderFromContainer("seminar");
-  saveOrderFromContainer("exam");
-
-  await saveSettingsData();
-  applyI18n();
-
-  if (previousLanguage !== settings.language) {
-    setDefaultTextsForLanguage();
-  }
-
-  setStatus(t("settingsSaved"));
-  closeSettings();
-}
-
 async function resetSettings() {
   if (!confirm(t("resetConfirm"))) return;
 
@@ -2095,17 +2423,18 @@ els.exportBtn.addEventListener("click", exportCalendar);
 els.connectGoogleBtn.addEventListener("click", connectGoogle);
 els.disconnectGoogleBtn.addEventListener("click", disconnectGoogle);
 els.syncGoogleBtn.addEventListener("click", syncGoogleCalendar);
+els.syncStopBtn?.addEventListener("click", requestSyncAbort);
 els.modeManualBtn?.addEventListener("click", () => setMode("manual"));
 els.modeGoogleBtn?.addEventListener("click", () => setMode("google"));
 
 document.addEventListener("click", (event) => {
-  if (!els.colorPalettePopover?.classList.contains("hidden")) {
+  if (!ignoreColorPaletteOutsideClick && !els.colorPalettePopover?.classList.contains("hidden")) {
     if (!event.target.closest(".color-picker-trigger") && !event.target.closest("#colorPalettePopover")) {
       closeColorPalette();
     }
   }
 
-  if (!els.formatBlockPopover?.classList.contains("hidden")) {
+  if (!ignoreFormatBlockOutsideClick && !els.formatBlockPopover?.classList.contains("hidden")) {
     if (!event.target.closest(".block-gear") && !event.target.closest("#formatBlockPopover")) {
       closeFormatBlockPopover();
     }
@@ -2121,14 +2450,14 @@ document.addEventListener("click", (event) => {
   input?.addEventListener("change", applyFormatBlockPopoverChanges);
 });
 
+els.formatBlockRoomSeparators?.addEventListener("change", applyFormatBlockPopoverChanges);
+
 els.formatBlockEnabledBtn?.addEventListener("click", toggleFormatBlockEnabled);
 els.formatBlockResetBtn?.addEventListener("click", resetActiveFormatBlockSettings);
 els.resetFormatSettingsBtn?.addEventListener("click", resetAllFormatSettings);
 
-window.addEventListener("resize", closeColorPalette);
 els.settingsBtn.addEventListener("click", openSettings);
 els.closeSettings.addEventListener("click", closeSettings);
-els.saveSettings.addEventListener("click", saveSettingsFromForm);
 els.resetSettings.addEventListener("click", resetSettings);
 els.themeToggle.addEventListener("change", toggleDarkMode);
 
@@ -2144,7 +2473,7 @@ document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
   if (!els.settingsModal.classList.contains("hidden")) closeSettings();
   if (!els.formatBlockPopover?.classList.contains("hidden")) closeFormatBlockPopover();
-  if (!els.colorPalettePopover?.classList.contains("hidden")) closeColorPalette();
+  closeColorPalette();
 });
 
 els.settingsModal.addEventListener("click", (event) => {
@@ -2181,7 +2510,7 @@ els.googleCalendarName?.addEventListener("input", () => {
     els.googleCalendarName.value = getGoogleCalendarNameInputValue();
     updateGoogleCalendarNameField();
   }
-  setMode(settings.preferredMode || "manual", false);
+  setMode(settings.preferredMode || "google", false);
   updateVersionLabel();
   applyI18n();
   await restoreSessionState();
@@ -2190,4 +2519,5 @@ els.googleCalendarName?.addEventListener("input", () => {
     renderSubjects(detectedSubjects, true);
   }
   await checkGoogleConnection();
+  chrome.storage.local.remove(["upfGoogleSyncState", "upfGoogleSyncPendingJob"]);
 })();

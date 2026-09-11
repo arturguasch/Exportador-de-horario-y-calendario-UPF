@@ -20,21 +20,17 @@
     </section>
 
     <nav class="mode-picker" id="modePicker" data-i18n-aria="ariaModePicker">
-      <button type="button" class="mode-card" data-mode="manual" id="modeManualBtn" aria-pressed="true">
-        <span class="mode-card-icon" aria-hidden="true">📄</span>
-        <span class="mode-card-title" data-i18n="modeManualTitle">Mode manual</span>
-        <span class="mode-card-hint" data-i18n="modeManualHint">Descarrega l'arxiu .ics i importa'l al teu calendari preferit.</span>
-      </button>
-      <button type="button" class="mode-card" data-mode="google" id="modeGoogleBtn" aria-pressed="false">
+      <button type="button" class="mode-card" data-mode="google" id="modeGoogleBtn" aria-pressed="true">
         <span class="mode-card-icon" aria-hidden="true">📅</span>
         <span class="mode-card-title" data-i18n="modeGoogleTitle">Mode automàtic</span>
         <span class="mode-card-hint" data-i18n="modeGoogleHint">Sincronitza l'horari directament al teu Google calendar.</span>
       </button>
+      <button type="button" class="mode-card" data-mode="manual" id="modeManualBtn" aria-pressed="false">
+        <span class="mode-card-icon" aria-hidden="true">📄</span>
+        <span class="mode-card-title" data-i18n="modeManualTitle">Mode manual</span>
+        <span class="mode-card-hint" data-i18n="modeManualHint">Descarrega l'arxiu .ics i importa'l al teu calendari preferit.</span>
+      </button>
     </nav>
-
-    <p class="google-beta-notice google-only" data-i18n="googleBetaNotice">
-      Mode automàtic en proves: la sincronització amb Google Calendar encara pot no funcionar correctament.
-    </p>
 
     <section class="card google-only google-step-card" id="googleConnectStep">
       <p class="step-badge" data-i18n="googleStepConnect">1. Connecta el compte Google</p>
@@ -127,7 +123,7 @@
       <p class="mini" data-i18n="blockHint">Arrossega els blocs. L'aula es separa amb "|" automàticament.</p>
 
       <div class="block-builder">
-        <div class="block-label" data-i18n="theoryFormat">Teoria</div>
+        <div class="block-label" data-i18n="theoryFormat">Classes de teoria</div>
         <div id="theoryBlocks" class="blocks-row" data-kind="theory"></div>
         <p class="format-preview">
           <span class="format-preview-label" data-i18n="formatPreviewLabel">Exemple:</span>
@@ -136,7 +132,7 @@
       </div>
 
       <div class="block-builder">
-        <div class="block-label" data-i18n="seminarFormat">Seminari</div>
+        <div class="block-label" data-i18n="seminarFormat">Seminaris</div>
         <div id="seminarBlocks" class="blocks-row" data-kind="seminar"></div>
         <p class="format-preview">
           <span class="format-preview-label" data-i18n="formatPreviewLabel">Exemple:</span>
@@ -145,7 +141,7 @@
       </div>
 
       <div class="block-builder">
-        <div class="block-label" data-i18n="examFormat">Examen</div>
+        <div class="block-label" data-i18n="examFormat">Exàmens</div>
         <div id="examBlocks" class="blocks-row" data-kind="exam"></div>
         <p class="format-preview">
           <span class="format-preview-label" data-i18n="formatPreviewLabel">Exemple:</span>
@@ -183,11 +179,28 @@
       <button id="syncGoogleBtn" class="primary hidden" data-i18n="syncGoogle">Sincronitzar amb Google Calendar</button>
     </section>
 
-    <section class="status hidden" id="status"></section>
+    <section class="sync-progress google-only hidden" id="syncProgress" aria-live="polite">
+      <div class="sync-progress-head">
+        <span id="syncProgressLabel" data-i18n="syncProgressLabel">Sincronitzant...</span>
+        <span id="syncProgressCount">0/0</span>
+      </div>
+      <div class="sync-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="syncProgressBar">
+        <div class="sync-progress-fill" id="syncProgressFill"></div>
+      </div>
+      <p class="mini sync-progress-detail" id="syncProgressDetail"></p>
 
-    <div id="colorPalettePopover" class="color-palette-popover hidden" role="dialog" aria-hidden="true">
-      <div id="colorPaletteGrid" class="color-palette-grid"></div>
-    </div>
+      <div class="sync-confirm hidden" id="syncConfirmClear">
+        <p class="sync-confirm-text" id="syncConfirmClearText"></p>
+        <div class="sync-confirm-actions">
+          <button type="button" class="sync-confirm-btn sync-confirm-keep" id="syncClearNoBtn" data-i18n="syncClearNo">Conservar-los i sincronitzar</button>
+          <button type="button" class="sync-confirm-btn sync-confirm-clear" id="syncClearYesBtn" data-i18n="syncClearYes">Esborrar-los i sincronitzar</button>
+        </div>
+      </div>
+
+      <button type="button" class="sync-stop-btn hidden" id="syncStopBtn" data-i18n="syncStop">Aturar sincronització</button>
+    </section>
+
+    <section class="status hidden" id="status"></section>
 
     <div id="formatBlockPopover" class="format-block-popover hidden" role="dialog" aria-hidden="true">
       <p class="format-block-popover-title" id="formatBlockPopoverTitle"></p>
@@ -212,8 +225,28 @@
         <input id="formatBlockSuffix" type="text" maxlength="20" autocomplete="off">
       </label>
 
+      <label class="option-check format-block-room-sep" id="formatBlockSepWrap">
+        <input id="formatBlockSeparators" type="checkbox">
+        <span data-i18n="formatBlockSeparators">Separar amb "|"</span>
+      </label>
+
       <button type="button" class="ghost small format-block-reset" id="formatBlockResetBtn" data-i18n="formatBlockReset">Restablir</button>
     </div>
+
+    <aside class="support-banner" aria-label="Support">
+      <div class="support-banner-icon" aria-hidden="true">☕</div>
+      <div class="support-banner-copy">
+        <p class="support-banner-title" data-i18n="supportBannerTitle">Esta extensión es gratuita</p>
+        <p class="support-banner-text" data-i18n="supportBannerText">Si te ha ahorrado tiempo, cualquier apoyo ayuda a cubrir los gastos de mantenimiento.</p>
+      </div>
+      <a
+        class="support-banner-btn"
+        href="https://buymeacoffee.com/openextensions"
+        target="_blank"
+        rel="noopener noreferrer"
+        data-i18n="supportProjectLink"
+      >Apoyar</a>
+    </aside>
 
     <footer class="footer">
       <p data-i18n="footerCredit">Fet per: Artur Guasch</p>
@@ -222,7 +255,7 @@
         <p class="footer-small" data-i18n-html="privacyNotice">L'extensió processa les dades localment al navegador. No recopila, ven ni transmet dades personals, credencials ni informació acadèmica a servidors externs.</p>
       </div>
       <p class="privacy-policy-link">
-        <a href="https://arturguasch.github.io/Exportador-de-horario-y-calendario-UPF/" target="_blank" rel="noopener noreferrer" data-i18n="privacyPolicyLink">Política de privacitat</a>
+        <a href="https://upfcalendarexporter.es/#privacidad" target="_blank" rel="noopener noreferrer" data-i18n="privacyPolicyLink">Política de privacitat</a>
       </p>
     </footer>
   </main>
@@ -255,7 +288,7 @@
 
       <div class="settings-actions">
         <button id="resetSettings" class="danger-button" data-i18n="resetExtension">Reiniciar extensió</button>
-        <button id="saveSettings" class="primary" data-i18n="save">Desar</button>
+        <a id="reportBugLink" class="report-bug-link" href="https://github.com/arturguasch/Exportador-de-horario-y-calendario-UPF/issues" target="_blank" rel="noopener noreferrer" data-i18n="reportBug">Reportar un error</a>
       </div>
 
       <p class="settings-version">
@@ -264,6 +297,10 @@
       </p>
     </div>
   </section>
+
+  <div id="colorPalettePopover" class="color-palette-popover hidden" role="dialog" aria-hidden="true">
+    <div id="colorPaletteGrid" class="color-palette-grid"></div>
+  </div>
 
   <script src="oauth-config.js"></script>
   <script src="google-calendar.js"></script>

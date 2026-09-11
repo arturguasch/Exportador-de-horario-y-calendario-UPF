@@ -93,7 +93,7 @@
     "message": "Event format"
   },
   "examFormat": {
-    "message": "Exam"
+    "message": "Exams"
   },
   "exportIcs": {
     "message": "Export .ics"
@@ -146,6 +146,12 @@
   "formatBlockGearLabel": {
     "message": "Customize block"
   },
+  "formatBlockMoveLeft": {
+    "message": "Move block left"
+  },
+  "formatBlockMoveRight": {
+    "message": "Move block right"
+  },
   "formatBlockTitleEnabled": {
     "message": "Title enabled"
   },
@@ -160,6 +166,12 @@
   },
   "formatBlockRoomHint": {
     "message": "You can add a prefix like Room or trailing text."
+  },
+  "formatBlockRoomSeparators": {
+    "message": "Separate the room with \"|\""
+  },
+  "formatBlockSeparators": {
+    "message": "Separate with \"|\""
   },
   "formatBlockSubjectHint": {
     "message": "Add text before or after the subject name."
@@ -281,14 +293,11 @@
   "resetExtension": {
     "message": "Reset extension"
   },
-  "save": {
-    "message": "Save"
+  "reportBug": {
+    "message": "Report a bug"
   },
   "seminarFormat": {
-    "message": "Seminar"
-  },
-  "settingsSaved": {
-    "message": "Settings saved."
+    "message": "Seminars"
   },
   "settingsTitle": {
     "message": "Settings"
@@ -312,7 +321,7 @@
     "message": "Subjects"
   },
   "theoryFormat": {
-    "message": "Theory"
+    "message": "Theory classes"
   },
   "titleOrder": {
     "message": "Title order"
@@ -338,6 +347,12 @@
   "googleFailed": {
     "message": "Events with errors"
   },
+  "googleFailedList": {
+    "message": "Events that failed"
+  },
+  "googleFailedMore": {
+    "message": "...and {n} more"
+  },
   "googleConnected": {
     "message": "Connected to Google Calendar."
   },
@@ -361,6 +376,42 @@
   },
   "googleSyncDone": {
     "message": "Sync completed."
+  },
+  "googleSyncDoneSuccess": {
+    "message": "Sync completed successfully"
+  },
+  "googleSyncPartial": {
+    "message": "⚠️ Sync completed with warnings"
+  },
+  "googleSyncFailed": {
+    "message": "Sync could not be completed"
+  },
+  "exportDoneSuccess": {
+    "message": "Export completed successfully"
+  },
+  "supportThanks": {
+    "message": "This extension is free. If it helped you and you want to support maintenance:"
+  },
+  "supportThanksLink": {
+    "message": "buymeacoffee.com/openextensions"
+  },
+  "supportContactBefore": {
+    "message": "If the problem continues, email"
+  },
+  "supportContactAfter": {
+    "message": "."
+  },
+  "supportContactSubject": {
+    "message": "Help UPF calendar exporter"
+  },
+  "supportProjectLink": {
+    "message": "Support"
+  },
+  "supportBannerTitle": {
+    "message": "This extension is free"
+  },
+  "supportBannerText": {
+    "message": "If it has saved you time, any support helps cover maintenance costs."
   },
   "googleSyncing": {
     "message": "Syncing with Google Calendar..."
@@ -393,7 +444,55 @@
     "message": "Sync your schedule directly to your Google Calendar."
   },
   "googleBetaNotice": {
-    "message": "Automatic mode is in testing: Google Calendar sync may not work correctly yet."
+    "message": ""
+  },
+  "syncProgressLabel": {
+    "message": "Syncing..."
+  },
+  "syncProgressPreparing": {
+    "message": "Preparing sync..."
+  },
+  "syncProgressConfirm": {
+    "message": "Existing calendar detected"
+  },
+  "syncProgressClearing": {
+    "message": "Deleting previous events..."
+  },
+  "syncProgressCleanup": {
+    "message": "Cleaning up old events..."
+  },
+  "syncClearExisting": {
+    "message": "The calendar “{name}” already exists. Delete previous events created by the extension before syncing?"
+  },
+  "syncClearExistingTracked": {
+    "message": "The calendar “{name}” already exists ({n} previous events). Delete them before syncing?"
+  },
+  "syncClearExistingHint": {
+    "message": "Choose whether to start fresh or keep and update existing events."
+  },
+  "syncClearYes": {
+    "message": "Delete them and sync"
+  },
+  "syncClearNo": {
+    "message": "Keep them and sync"
+  },
+  "syncStop": {
+    "message": "Stop sync"
+  },
+  "syncCancelled": {
+    "message": "Sync stopped."
+  },
+  "syncProgressDone": {
+    "message": "Sync completed"
+  },
+  "syncProgressError": {
+    "message": "Error during sync"
+  },
+  "googleSyncKeepOpen": {
+    "message": "⚠️Syncing... Do not close the extension until the process finishes⚠️"
+  },
+  "errorGoogleReconnect": {
+    "message": "Your Google session expired. Reconnect your account and sync again."
   },
   "googleStepConnect": {
     "message": "1. Connect your Google account"
