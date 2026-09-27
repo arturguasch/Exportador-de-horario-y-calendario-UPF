@@ -6,6 +6,8 @@ const GOOGLE_USERINFO_API = "https://www.googleapis.com/oauth2/v2/userinfo";
 const UID_MAP_KEY = "upfGoogleEventMap";
 const TOKEN_STORAGE_KEY = "upfGoogleAuthToken";
 const UPF_CALENDAR_STORAGE_KEY = "upfGoogleCalendar";
+const UPF_CALENDARS_MAP_KEY = "upfGoogleCalendarsMap";
+const SINGLE_CALENDAR_KEY = "__single__";
 const UPF_CALENDAR_NAME = "Horari UPF";
 const UPF_CALENDAR_TIMEZONE = "Europe/Madrid";
 const EVENT_LABEL_VERSION = "eventLabelVersion=1";
@@ -38,7 +40,59 @@ const GOOGLE_COLOR_PRESETS = [
   { id: "11111111-0023-4000-8000-000000000023", hex: "#A79B8E" },
 ];
 
-async function ensureCalendarLabels(token, calendarId) {
+function normalizeColorHex(hex) {
+  return String(hex || "").trim().toLowerCase();
+}
+
+const CUSTOM_COLOR_PREFIX = "custom:";
+
+function isCustomColorRef(value) {
+  return typeof value === "string" && value.startsWith(CUSTOM_COLOR_PREFIX);
+}
+
+function customLabelIdFromHex(hex) {
+  const h = normalizeColorHex(hex).replace("#", "");
+  if (!/^[0-9a-f]{6}$/.test(h)) return null;
+  return `11111111-${h.slice(0, 4)}-4000-8000-${h.slice(4).padEnd(12, "0")}`;
+}
+
+function resolveColorRef(colorRef) {
+  if (!colorRef) return null;
+
+  if (isCustomColorRef(colorRef)) {
+    const hex = normalizeColorHex(colorRef.slice(CUSTOM_COLOR_PREFIX.length));
+    if (!/^#[0-9a-f]{6}$/.test(hex)) return null;
+    const eventLabelId = customLabelIdFromHex(hex);
+    if (!eventLabelId) return null;
+    return { eventLabelId, hex };
+  }
+
+  if (isLabelColorId(colorRef)) {
+    const preset = GOOGLE_COLOR_PRESETS.find((entry) => entry.id === colorRef);
+    return { eventLabelId: colorRef, hex: preset?.hex || null };
+  }
+
+  return { colorId: String(colorRef) };
+}
+
+function collectUsedLabelColors(events) {
+  const colors = new Map();
+
+  for (const entry of events) {
+    const labelId = entry?.body?.eventLabelId;
+    if (!labelId || !isLabelColorId(labelId)) continue;
+
+    const hex = entry.labelHex || GOOGLE_COLOR_PRESETS.find((preset) => preset.id === labelId)?.hex;
+    if (!hex) continue;
+    colors.set(labelId, hex);
+  }
+
+  return colors;
+}
+
+async function ensureCalendarLabels(token, calendarId, neededLabelColors) {
+  if (!(neededLabelColors instanceof Map) || !neededLabelColors.size) return;
+
   const calendarPath = `/calendars/${encodeURIComponent(calendarId)}?${EVENT_LABEL_VERSION}`;
   let existing = [];
 
@@ -47,21 +101,33 @@ async function ensureCalendarLabels(token, calendarId) {
     existing = calendar?.labelProperties?.eventLabels || [];
   } catch (error) {
     console.warn("UPF labels read failed", error);
+    return;
   }
 
   const existingIds = new Set(existing.map((label) => label.id));
+  const existingHexes = new Set(
+    existing.map((label) => normalizeColorHex(label.backgroundColor)).filter(Boolean)
+  );
   const merged = [...existing];
+  let changed = false;
 
-  for (const preset of GOOGLE_COLOR_PRESETS) {
-    if (!existingIds.has(preset.id)) {
-      merged.push({
-        id: preset.id,
-        backgroundColor: preset.hex,
-      });
-    }
+  for (const [id, hexValue] of neededLabelColors) {
+    if (existingIds.has(id)) continue;
+
+    const hex = normalizeColorHex(hexValue);
+    if (!/^#[0-9a-f]{6}$/.test(hex)) continue;
+    if (existingHexes.has(hex)) continue;
+
+    merged.push({
+      id,
+      backgroundColor: hex,
+    });
+    existingIds.add(id);
+    existingHexes.add(hex);
+    changed = true;
   }
 
-  if (merged.length === existing.length) return;
+  if (!changed) return;
 
   await calendarRequest(token, calendarPath, {
     method: "PATCH",
@@ -232,6 +298,57 @@ async function saveStoredCalendar(calendar) {
   });
 }
 
+async function loadStoredCalendarsMap() {
+  const data = await chrome.storage.local.get({
+    [UPF_CALENDARS_MAP_KEY]: null,
+    [UPF_CALENDAR_STORAGE_KEY]: null,
+  });
+  if (data[UPF_CALENDARS_MAP_KEY] && typeof data[UPF_CALENDARS_MAP_KEY] === "object") {
+    return { ...data[UPF_CALENDARS_MAP_KEY] };
+  }
+  if (data[UPF_CALENDAR_STORAGE_KEY]?.id) {
+    return { [SINGLE_CALENDAR_KEY]: data[UPF_CALENDAR_STORAGE_KEY] };
+  }
+  return {};
+}
+
+async function saveStoredCalendarForKey(key, calendar) {
+  const map = await loadStoredCalendarsMap();
+  map[key] = {
+    id: calendar.id,
+    summary: calendar.summary || UPF_CALENDAR_NAME,
+  };
+  await chrome.storage.local.set({ [UPF_CALENDARS_MAP_KEY]: map });
+  if (key === SINGLE_CALENDAR_KEY) {
+    await saveStoredCalendar(calendar);
+  }
+}
+
+function contrastForeground(hex) {
+  const raw = String(hex || "").replace("#", "");
+  if (raw.length !== 6) return "#ffffff";
+  const r = parseInt(raw.slice(0, 2), 16);
+  const g = parseInt(raw.slice(2, 4), 16);
+  const b = parseInt(raw.slice(4, 6), 16);
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return lum > 0.62 ? "#000000" : "#ffffff";
+}
+
+async function applyCalendarColor(token, calendarId, colorHex) {
+  if (!calendarId || !colorHex) return;
+  await calendarRequest(
+    token,
+    `/users/me/calendarList/${encodeURIComponent(calendarId)}?colorRgbFormat=true`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({
+        backgroundColor: colorHex,
+        foregroundColor: contrastForeground(colorHex),
+      }),
+    }
+  );
+}
+
 async function launchWebAuthFlow(interactive = true) {
   const redirectUrl = getRedirectUrl();
   const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
@@ -342,16 +459,39 @@ async function findCalendarInList(token, name) {
   return null;
 }
 
-async function verifyCalendarExists(token, calendarId) {
-  try {
-    const calendar = await calendarRequest(
-      token,
-      `/calendars/${encodeURIComponent(calendarId)}`
-    );
-    return calendar?.id ? { id: calendar.id, summary: calendar.summary || UPF_CALENDAR_NAME } : null;
-  } catch (error) {
-    return null;
+async function findCalendarByIdInList(token, calendarId) {
+  if (!calendarId) return null;
+  let pageToken = "";
+
+  do {
+    const query = pageToken ? `?pageToken=${encodeURIComponent(pageToken)}` : "";
+    const list = await calendarRequest(token, `/users/me/calendarList${query}`);
+    const match = (list.items || []).find((entry) => entry.id === calendarId);
+    if (match?.id) {
+      return { id: match.id, summary: match.summary || UPF_CALENDAR_NAME };
+    }
+    pageToken = list.nextPageToken || "";
+  } while (pageToken);
+
+  return null;
+}
+
+function isGoneError(error) {
+  const message = String(error?.message || error || "");
+  return /\bCalendar API (404|410)\b/.test(message);
+}
+
+async function purgeUidMapForCalendar(calendarId) {
+  if (!calendarId) return;
+  const uidMap = await loadUidMap();
+  let changed = false;
+  for (const [uid, entry] of Object.entries(uidMap)) {
+    if (entry?.calendarId === calendarId) {
+      delete uidMap[uid];
+      changed = true;
+    }
   }
+  if (changed) await saveUidMap(uidMap);
 }
 
 async function createUpfCalendar(token, calendarName) {
@@ -366,37 +506,45 @@ async function createUpfCalendar(token, calendarName) {
   return { id: created.id, summary: created.summary || name };
 }
 
-async function resolveUpfCalendar(token, calendarName) {
+async function resolveUpfCalendar(token, calendarName, storageKey = SINGLE_CALENDAR_KEY) {
   const name = (calendarName || "").trim() || UPF_CALENDAR_NAME;
+  const map = await loadStoredCalendarsMap();
+  const stored = map[storageKey] || null;
 
   const byName = await findCalendarInList(token, name);
   if (byName) {
-    await saveStoredCalendar(byName);
+    if (stored?.id && stored.id !== byName.id) {
+      await purgeUidMapForCalendar(stored.id);
+    }
+    await saveStoredCalendarForKey(storageKey, byName);
     return { calendar: byName, created: false };
   }
 
-  const stored = await loadStoredCalendar();
   if (stored?.id) {
-    const verified = await verifyCalendarExists(token, stored.id);
-    if (verified) {
-      if (verified.summary !== name) {
+    // Només reutilitza el calendari desat si encara és a la llista activa.
+    // GET /calendars/{id} pot respondre per calendaris a la paperera; la llista no.
+    const inList = await findCalendarByIdInList(token, stored.id);
+    if (inList) {
+      if (inList.summary !== name) {
         const updated = await calendarRequest(
           token,
-          `/calendars/${encodeURIComponent(verified.id)}`,
+          `/calendars/${encodeURIComponent(inList.id)}`,
           { method: "PATCH", body: JSON.stringify({ summary: name }) }
         );
-        const calendar = { id: verified.id, summary: updated?.summary || name };
-        await saveStoredCalendar(calendar);
+        const calendar = { id: inList.id, summary: updated?.summary || name };
+        await saveStoredCalendarForKey(storageKey, calendar);
         return { calendar, created: false };
       }
 
-      await saveStoredCalendar(verified);
-      return { calendar: verified, created: false };
+      await saveStoredCalendarForKey(storageKey, inList);
+      return { calendar: inList, created: false };
     }
+
+    await purgeUidMapForCalendar(stored.id);
   }
 
   const created = await createUpfCalendar(token, name);
-  await saveStoredCalendar(created);
+  await saveStoredCalendarForKey(storageKey, created);
   return { calendar: created, created: true };
 }
 
@@ -463,14 +611,18 @@ function buildGoogleEvent(item, helpers) {
     if (description) event.description = description;
   }
 
+  // Per-subject calendars use calendar colour only; event labels would duplicate swatches.
+  if (helpers.calendarMode === "perSubject") {
+    return event;
+  }
+
   const subject = helpers.normalizeSubject(item);
   const colorRef = helpers.getEventColorId?.(item) ?? helpers.getSubjectColorId?.(subject);
-  if (colorRef) {
-    if (isLabelColorId(colorRef)) {
-      event.eventLabelId = colorRef;
-    } else {
-      event.colorId = String(colorRef);
-    }
+  const resolved = resolveColorRef(colorRef);
+  if (resolved?.eventLabelId) {
+    event.eventLabelId = resolved.eventLabelId;
+  } else if (resolved?.colorId) {
+    event.colorId = resolved.colorId;
   }
 
   return event;
@@ -488,6 +640,7 @@ async function disconnectGoogle() {
   await chrome.storage.local.remove("upfGoogleConnection");
   await chrome.storage.local.remove(UID_MAP_KEY);
   await chrome.storage.local.remove(UPF_CALENDAR_STORAGE_KEY);
+  await chrome.storage.local.remove(UPF_CALENDARS_MAP_KEY);
 }
 
 async function getStoredConnection() {
@@ -497,6 +650,7 @@ async function getStoredConnection() {
 
 function prepareSyncJob(items, helpers) {
   const calendarName = (helpers.calendarName || "").trim() || UPF_CALENDAR_NAME;
+  const calendarMode = helpers.calendarMode === "perSubject" ? "perSubject" : "single";
   const exportable = items.filter((item) => helpers.shouldExport(item, helpers.includeHolidays));
   const events = [];
   const failures = [];
@@ -509,6 +663,10 @@ function prepareSyncJob(items, helpers) {
       continue;
     }
     if (helpers.selectedSubjects?.size && !helpers.selectedSubjects.has(subject)) {
+      skipped += 1;
+      continue;
+    }
+    if (helpers.isItemAllowedBySeminarGroup && !helpers.isItemAllowedBySeminarGroup(item)) {
       skipped += 1;
       continue;
     }
@@ -530,10 +688,14 @@ function prepareSyncJob(items, helpers) {
 
     try {
       const body = buildGoogleEvent(item, helpers);
+      const colorRef = helpers.getEventColorId?.(item) ?? helpers.getSubjectColorId?.(subject);
+      const resolved = resolveColorRef(colorRef);
       events.push({
         uid: helpers.makeUid(item),
         body,
         label,
+        subject,
+        labelHex: resolved?.hex || null,
       });
     } catch (error) {
       failures.push({
@@ -546,8 +708,32 @@ function prepareSyncJob(items, helpers) {
     }
   }
 
+  let calendars;
+  if (calendarMode === "perSubject") {
+    const bySubject = new Map();
+    for (const event of events) {
+      if (!bySubject.has(event.subject)) bySubject.set(event.subject, []);
+      bySubject.get(event.subject).push(event);
+    }
+    calendars = [...bySubject.entries()].map(([subject, subjectEvents]) => ({
+      key: subject,
+      name: (helpers.getCalendarNameForSubject?.(subject) || subject).trim() || subject,
+      colorHex: helpers.getCalendarColorHex?.(subject) || null,
+      events: subjectEvents,
+    }));
+  } else {
+    calendars = [{
+      key: SINGLE_CALENDAR_KEY,
+      name: calendarName,
+      colorHex: helpers.getSingleCalendarColorHex?.() || null,
+      events,
+    }];
+  }
+
   return {
+    calendarMode,
     calendarName,
+    calendars,
     events,
     skipped,
     prepareFailures: failures,
@@ -573,8 +759,16 @@ async function runPreparedSync(job, onProgress = () => {}, options = {}) {
   const token = await getAuthToken(interactive);
   throwIfAborted();
 
-  const calendarName = (job.calendarName || "").trim() || UPF_CALENDAR_NAME;
-  const preparedEvents = Array.isArray(job.events) ? job.events : [];
+  const calendarTargets = Array.isArray(job.calendars) && job.calendars.length
+    ? job.calendars
+    : [{
+        key: SINGLE_CALENDAR_KEY,
+        name: (job.calendarName || "").trim() || UPF_CALENDAR_NAME,
+        colorHex: null,
+        events: Array.isArray(job.events) ? job.events : [],
+      }];
+
+  const preparedEvents = calendarTargets.flatMap((target) => target.events || []);
   const failures = [...(job.prepareFailures || [])];
   let skipped = Number(job.skipped) || 0;
   let created = 0;
@@ -583,6 +777,8 @@ async function runPreparedSync(job, onProgress = () => {}, options = {}) {
   let failed = failures.length;
   let firstError = failures.length ? new Error(failures[0].reason) : null;
   let processed = 0;
+  let anyCalendarCreated = false;
+  const resolvedCalendars = [];
 
   progressCb({
     phase: "preparing",
@@ -594,26 +790,55 @@ async function runPreparedSync(job, onProgress = () => {}, options = {}) {
     failed,
   });
 
-  const { calendar, created: calendarCreated } = await resolveUpfCalendar(token, calendarName);
-  const calendarId = calendar.id;
-  throwIfAborted();
+  const resolvedTargets = [];
+  for (const target of calendarTargets) {
+    throwIfAborted();
+    const { calendar, created: calendarCreated } = await resolveUpfCalendar(
+      token,
+      target.name,
+      target.key || SINGLE_CALENDAR_KEY
+    );
+    if (calendarCreated) anyCalendarCreated = true;
+    resolvedCalendars.push(calendar.summary || target.name);
+    resolvedTargets.push({
+      ...target,
+      calendar,
+      calendarCreated,
+      calendarId: calendar.id,
+    });
 
-  try {
-    await ensureCalendarLabels(token, calendarId);
-  } catch (error) {
-    console.warn("UPF labels setup failed, falling back to legacy colors", error);
+    if (job.calendarMode !== "perSubject") {
+      try {
+        const neededLabelColors = collectUsedLabelColors(target.events || []);
+        await ensureCalendarLabels(token, calendar.id, neededLabelColors);
+      } catch (error) {
+        console.warn("UPF labels setup failed, falling back to legacy colors", error);
+      }
+    }
+
+    if (target.colorHex) {
+      try {
+        await applyCalendarColor(token, calendar.id, target.colorHex);
+      } catch (error) {
+        console.warn("UPF calendar color failed", error);
+      }
+    }
   }
 
-  const eventsPath = `/calendars/${encodeURIComponent(calendarId)}/events`;
-  const eventsBase = `${eventsPath}?${EVENT_LABEL_VERSION}`;
   const uidMap = await loadUidMap();
   const activeUids = new Set();
+  const targetIds = new Set(resolvedTargets.map((entry) => entry.calendarId));
 
   let clearExisting = false;
   let removeOrphans = true;
 
-  if (!calendarCreated && confirmClearExisting) {
-    const trackedCount = Object.values(uidMap).filter((entry) => entry?.calendarId === calendarId && entry?.eventId).length;
+  if (!anyCalendarCreated && confirmClearExisting) {
+    const trackedCount = Object.values(uidMap).filter(
+      (entry) => entry?.eventId && targetIds.has(entry.calendarId)
+    ).length;
+    const displayName = resolvedCalendars.length > 1
+      ? resolvedCalendars.join(", ")
+      : (resolvedCalendars[0] || UPF_CALENDAR_NAME);
     progressCb({
       phase: "confirm",
       current: 0,
@@ -622,15 +847,14 @@ async function runPreparedSync(job, onProgress = () => {}, options = {}) {
       updated,
       deleted,
       failed,
-      calendarName: calendar.summary || calendarName,
+      calendarName: displayName,
       trackedCount,
     });
     clearExisting = await confirmClearExisting({
-      calendarName: calendar.summary || calendarName,
+      calendarName: displayName,
       trackedCount,
     });
     throwIfAborted();
-    // If the user keeps existing events, do not delete orphans at the end.
     removeOrphans = clearExisting;
   }
 
@@ -647,36 +871,41 @@ async function runPreparedSync(job, onProgress = () => {}, options = {}) {
 
     for (const [uid, entry] of Object.entries(uidMap)) {
       throwIfAborted();
-      if (!entry?.eventId || entry.calendarId !== calendarId) continue;
+      if (!entry?.eventId || !targetIds.has(entry.calendarId)) continue;
       try {
         await calendarRequest(
           token,
-          `${eventsPath}/${encodeURIComponent(entry.eventId)}`,
+          `/calendars/${encodeURIComponent(entry.calendarId)}/events/${encodeURIComponent(entry.eventId)}`,
           { method: "DELETE" }
         );
         delete uidMap[uid];
         deleted += 1;
-        progressCb({
-          phase: "clearing",
-          current: 0,
-          total: preparedEvents.length,
-          created,
-          updated,
-          deleted,
-          failed,
-        });
       } catch (error) {
-        failed += 1;
-        if (!firstError) firstError = error;
-        failures.push({
-          title: uid,
-          when: "",
-          action: "delete",
-          reason: error?.message || String(error || "unknown"),
-          label: `${uid}`,
-        });
-        console.error("UPF sync pre-clear failed", uid, error);
+        if (isGoneError(error)) {
+          delete uidMap[uid];
+          deleted += 1;
+        } else {
+          failed += 1;
+          if (!firstError) firstError = error;
+          failures.push({
+            title: uid,
+            when: "",
+            action: "delete",
+            reason: error?.message || String(error || "unknown"),
+            label: `${uid}`,
+          });
+          console.error("UPF sync pre-clear failed", uid, error);
+        }
       }
+      progressCb({
+        phase: "clearing",
+        current: 0,
+        total: preparedEvents.length,
+        created,
+        updated,
+        deleted,
+        failed,
+      });
     }
     await saveUidMap(uidMap);
   }
@@ -691,64 +920,85 @@ async function runPreparedSync(job, onProgress = () => {}, options = {}) {
     failed,
   });
 
-  for (const entry of preparedEvents) {
-    throwIfAborted();
-    const uid = entry.uid;
-    const body = entry.body;
-    activeUids.add(uid);
+  for (const target of resolvedTargets) {
+    const calendarId = target.calendarId;
+    const eventsPath = `/calendars/${encodeURIComponent(calendarId)}/events`;
+    const eventsBase = `${eventsPath}?${EVENT_LABEL_VERSION}`;
 
-    try {
-      const existing = uidMap[uid];
-      const sameCalendar = existing?.calendarId === calendarId;
+    for (const entry of target.events || []) {
+      throwIfAborted();
+      const uid = entry.uid;
+      const body = entry.body;
+      activeUids.add(uid);
 
-      if (existing?.eventId && sameCalendar) {
-        await calendarRequest(
-          token,
-          `${eventsPath}/${encodeURIComponent(existing.eventId)}?${EVENT_LABEL_VERSION}`,
-          { method: "PATCH", body: JSON.stringify(body) }
-        );
-        uidMap[uid] = {
-          eventId: existing.eventId,
-          calendarId,
-          syncedAt: Date.now(),
-        };
-        updated += 1;
-      } else {
-        const createdEvent = await calendarRequest(
-          token,
-          eventsBase,
-          { method: "POST", body: JSON.stringify(body) }
-        );
-        uidMap[uid] = {
-          eventId: createdEvent.id,
-          calendarId,
-          syncedAt: Date.now(),
-        };
-        created += 1;
+      try {
+        const existing = uidMap[uid];
+        const sameCalendar = existing?.calendarId === calendarId;
+
+        if (existing?.eventId && sameCalendar) {
+          try {
+            await calendarRequest(
+              token,
+              `${eventsPath}/${encodeURIComponent(existing.eventId)}?${EVENT_LABEL_VERSION}`,
+              { method: "PATCH", body: JSON.stringify(body) }
+            );
+            uidMap[uid] = {
+              eventId: existing.eventId,
+              calendarId,
+              syncedAt: Date.now(),
+            };
+            updated += 1;
+          } catch (error) {
+            if (!isGoneError(error)) throw error;
+            const createdEvent = await calendarRequest(
+              token,
+              eventsBase,
+              { method: "POST", body: JSON.stringify(body) }
+            );
+            uidMap[uid] = {
+              eventId: createdEvent.id,
+              calendarId,
+              syncedAt: Date.now(),
+            };
+            created += 1;
+          }
+        } else {
+          const createdEvent = await calendarRequest(
+            token,
+            eventsBase,
+            { method: "POST", body: JSON.stringify(body) }
+          );
+          uidMap[uid] = {
+            eventId: createdEvent.id,
+            calendarId,
+            syncedAt: Date.now(),
+          };
+          created += 1;
+        }
+      } catch (error) {
+        failed += 1;
+        if (!firstError) firstError = error;
+        failures.push({
+          title: entry.label || uid,
+          when: "",
+          action: "sync",
+          reason: error?.message || String(error || "unknown"),
+          label: entry.label || uid,
+        });
+        console.error("UPF sync item failed", entry, error);
       }
-    } catch (error) {
-      failed += 1;
-      if (!firstError) firstError = error;
-      failures.push({
-        title: entry.label || uid,
-        when: "",
-        action: "sync",
-        reason: error?.message || String(error || "unknown"),
-        label: entry.label || uid,
-      });
-      console.error("UPF sync item failed", entry, error);
-    }
 
-    processed += 1;
-    progressCb({
-      phase: "syncing",
-      current: processed,
-      total: preparedEvents.length,
-      created,
-      updated,
-      deleted,
-      failed,
-    });
+      processed += 1;
+      progressCb({
+        phase: "syncing",
+        current: processed,
+        total: preparedEvents.length,
+        created,
+        updated,
+        deleted,
+        failed,
+      });
+    }
   }
 
   if (removeOrphans) {
@@ -765,37 +1015,42 @@ async function runPreparedSync(job, onProgress = () => {}, options = {}) {
     for (const [uid, entry] of Object.entries(uidMap)) {
       throwIfAborted();
       if (activeUids.has(uid)) continue;
-      if (!entry?.eventId || entry.calendarId !== calendarId) continue;
+      if (!entry?.eventId || !targetIds.has(entry.calendarId)) continue;
 
       try {
         await calendarRequest(
           token,
-          `${eventsPath}/${encodeURIComponent(entry.eventId)}`,
+          `/calendars/${encodeURIComponent(entry.calendarId)}/events/${encodeURIComponent(entry.eventId)}`,
           { method: "DELETE" }
         );
         delete uidMap[uid];
         deleted += 1;
-        progressCb({
-          phase: "cleanup",
-          current: processed,
-          total: preparedEvents.length,
-          created,
-          updated,
-          deleted,
-          failed,
-        });
       } catch (error) {
-        failed += 1;
-        if (!firstError) firstError = error;
-        failures.push({
-          title: uid,
-          when: "",
-          action: "delete",
-          reason: error?.message || String(error || "unknown"),
-          label: `${uid}`,
-        });
-        console.error("UPF sync delete failed", uid, error);
+        if (isGoneError(error)) {
+          delete uidMap[uid];
+          deleted += 1;
+        } else {
+          failed += 1;
+          if (!firstError) firstError = error;
+          failures.push({
+            title: uid,
+            when: "",
+            action: "delete",
+            reason: error?.message || String(error || "unknown"),
+            label: `${uid}`,
+          });
+          console.error("UPF sync delete failed", uid, error);
+        }
       }
+      progressCb({
+        phase: "cleanup",
+        current: processed,
+        total: preparedEvents.length,
+        created,
+        updated,
+        deleted,
+        failed,
+      });
     }
   }
 
@@ -824,8 +1079,10 @@ async function runPreparedSync(job, onProgress = () => {}, options = {}) {
     failed,
     failures,
     total: Number(job.total) || preparedEvents.length,
-    calendarName: calendar.summary || calendarName,
-    calendarCreated,
+    calendarName: resolvedCalendars.length > 1
+      ? resolvedCalendars.join(", ")
+      : (resolvedCalendars[0] || UPF_CALENDAR_NAME),
+    calendarCreated: anyCalendarCreated,
     clearedExisting: clearExisting,
   };
 }
@@ -857,6 +1114,8 @@ globalThis.UpfGoogleCalendar = {
   getRedirectUrl,
   UPF_CALENDAR_NAME,
   COLOR_PRESETS: GOOGLE_COLOR_PRESETS,
+  CUSTOM_COLOR_PREFIX,
+  resolveColorRef,
 };
 
 })();

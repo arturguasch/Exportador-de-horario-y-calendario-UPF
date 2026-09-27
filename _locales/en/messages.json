@@ -305,6 +305,9 @@
   "splitBySubject": {
     "message": "Create one .ics per selected subject"
   },
+  "splitBySubjectHint": {
+    "message": "Recommended if you want to assign a different colour to each subject when importing the files into your calendar."
+  },
   "startDate": {
     "message": "Start date"
   },
@@ -388,6 +391,9 @@
   },
   "exportDoneSuccess": {
     "message": "Export completed successfully"
+  },
+  "statusTechnicalDetails": {
+    "message": "Technical details"
   },
   "supportThanks": {
     "message": "This extension is free. If it helped you and you want to support maintenance:"
@@ -501,7 +507,7 @@
     "message": "Required to sync events with your Google account."
   },
   "googleStepCalendarName": {
-    "message": "2. Calendar name"
+    "message": "Calendar name"
   },
   "googleCalendarNameHint": {
     "message": "If left empty, the default name will be used."
@@ -510,16 +516,70 @@
     "message": "UPF Schedule"
   },
   "googleStepDates": {
-    "message": "3. Start and end date"
+    "message": "2. Start and end date"
   },
   "googleStepSubjects": {
-    "message": "4. Detect subjects and choose colors"
+    "message": "3. Detect subjects and choose colours"
+  },
+  "googleStepCalendars": {
+    "message": "4. Calendar name and sidebar colour"
+  },
+  "googleCalendarsHint": {
+    "message": "By default one calendar is created. You can create one per subject and choose its name and colour. The calendar colour is what appears in the Google Calendar <strong>sidebar</strong>."
+  },
+  "ariaGoogleCalendarMode": {
+    "message": "Google calendar type"
+  },
+  "googleCalendarModeSingle": {
+    "message": "A single calendar"
+  },
+  "googleCalendarModePerSubject": {
+    "message": "One calendar per subject"
+  },
+  "googleCalendarColorLabel": {
+    "message": "Calendar sidebar colour"
+  },
+  "googleCalendarsNeedSubjects": {
+    "message": "Detect and select subjects to configure each calendar."
+  },
+  "tutorialDoubt": {
+    "message": "Need help?"
+  },
+  "tutorialWatch": {
+    "message": "Watch the tutorial"
   },
   "googlePickColor": {
     "message": "Pick color"
   },
+  "colorPalettePresets": {
+    "message": "Palette"
+  },
+  "colorPaletteSaved": {
+    "message": "Your colors"
+  },
+  "colorPaletteCustom": {
+    "message": "Custom color"
+  },
+  "colorPaletteSaveAria": {
+    "message": "Add current color to your colors"
+  },
+  "colorPaletteEyedropper": {
+    "message": "Pick color from screen"
+  },
+  "colorPaletteRemoveSaved": {
+    "message": "Remove saved color"
+  },
   "googleAltColorToggle": {
-    "message": "Different color"
+    "message": "Custom color"
+  },
+  "googleAltColorInherited": {
+    "message": "Same color as the subject"
+  },
+  "googleAltColorSeminarHint": {
+    "message": "Seminars are always included. Turn on “Custom color” only if you want a different color."
+  },
+  "googleAltColorExamHint": {
+    "message": "Exams are always included. Turn on “Custom color” only if you want a different color."
   },
   "googleColorSeminar": {
     "message": "Seminars"
@@ -529,6 +589,30 @@
   },
   "googleExpandSubjectTypes": {
     "message": "Show seminar and exam options"
+  },
+  "googleExpandSubjectTypesWithGroups": {
+    "message": "Show options and seminar groups"
+  },
+  "seminarGroupsWarningTooltip": {
+    "message": "Multiple seminar groups were detected for this subject"
+  },
+  "seminarGroupsWarningTitle": {
+    "message": "Multiple seminar groups detected"
+  },
+  "seminarGroupsWarningHint": {
+    "message": "The timetable may list every group (e.g. 301, 302, 303). Select only the ones you want to export or sync."
+  },
+  "seminarGroupLabel": {
+    "message": "Group {group}"
+  },
+  "seminarGroupsSelectAll": {
+    "message": "All groups"
+  },
+  "seminarGroupsSelectNone": {
+    "message": "No groups"
+  },
+  "seminarGroupsDetectedStatus": {
+    "message": "{n} subject(s) with multiple seminar groups: check the ⚠️ warning"
   },
   "googleStepOptions": {
     "message": "5. Options and event format"

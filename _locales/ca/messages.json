@@ -305,6 +305,9 @@
   "splitBySubject": {
     "message": "Crear un .ics per cada matèria seleccionada"
   },
+  "splitBySubjectHint": {
+    "message": "Recomanat si vols assignar un color diferent a cada matèria quan importis els fitxers al calendari."
+  },
   "startDate": {
     "message": "Data inicial"
   },
@@ -388,6 +391,9 @@
   },
   "exportDoneSuccess": {
     "message": "Exportació completada amb èxit"
+  },
+  "statusTechnicalDetails": {
+    "message": "Detalls tècnics"
   },
   "supportThanks": {
     "message": "Aquesta extensió és gratuïta. Si t'ha ajudat i vols donar suport al manteniment:"
@@ -501,7 +507,7 @@
     "message": "Necessari per sincronitzar esdeveniments amb el teu compte de Google."
   },
   "googleStepCalendarName": {
-    "message": "2. Nom del calendari"
+    "message": "Nom del calendari"
   },
   "googleCalendarNameHint": {
     "message": "Si el deixes buit, s'usarà el nom per defecte."
@@ -510,16 +516,70 @@
     "message": "Horari UPF"
   },
   "googleStepDates": {
-    "message": "3. Data inicial i final"
+    "message": "2. Data inicial i final"
   },
   "googleStepSubjects": {
-    "message": "4. Detecta les matèries i tria colors"
+    "message": "3. Detecta les matèries i tria colors"
+  },
+  "googleStepCalendars": {
+    "message": "4. Nom i color lateral del calendari"
+  },
+  "googleCalendarsHint": {
+    "message": "Per defecte es crea un sol calendari. Pots crear-ne un per cada matèria i triar-ne el nom i el color. El color del calendari és el que es veu a la <strong>barra lateral</strong> de Google Calendar."
+  },
+  "ariaGoogleCalendarMode": {
+    "message": "Tipus de calendari a Google"
+  },
+  "googleCalendarModeSingle": {
+    "message": "Un sol calendari"
+  },
+  "googleCalendarModePerSubject": {
+    "message": "Un calendari per matèria"
+  },
+  "googleCalendarColorLabel": {
+    "message": "Color lateral del calendari"
+  },
+  "googleCalendarsNeedSubjects": {
+    "message": "Detecta i selecciona matèries per configurar cada calendari."
+  },
+  "tutorialDoubt": {
+    "message": "Algun dubte?"
+  },
+  "tutorialWatch": {
+    "message": "Veure el tutorial"
   },
   "googlePickColor": {
     "message": "Triar color"
   },
+  "colorPalettePresets": {
+    "message": "Paleta"
+  },
+  "colorPaletteSaved": {
+    "message": "Els teus colors"
+  },
+  "colorPaletteCustom": {
+    "message": "Color personalitzat"
+  },
+  "colorPaletteSaveAria": {
+    "message": "Afegir color actual als teus colors"
+  },
+  "colorPaletteEyedropper": {
+    "message": "Capturar color de la pantalla"
+  },
+  "colorPaletteRemoveSaved": {
+    "message": "Eliminar color desat"
+  },
   "googleAltColorToggle": {
-    "message": "Color diferent"
+    "message": "Color propi"
+  },
+  "googleAltColorInherited": {
+    "message": "Mateix color que l’assignatura"
+  },
+  "googleAltColorSeminarHint": {
+    "message": "Els seminaris s’inclouen sempre. Activa «Color propi» només si vols pintar-los d’un altre color."
+  },
+  "googleAltColorExamHint": {
+    "message": "Els exàmens s’inclouen sempre. Activa «Color propi» només si vols pintar-los d’un altre color."
   },
   "googleColorSeminar": {
     "message": "Seminaris"
@@ -529,6 +589,30 @@
   },
   "googleExpandSubjectTypes": {
     "message": "Mostrar opcions de seminaris i exàmens"
+  },
+  "googleExpandSubjectTypesWithGroups": {
+    "message": "Mostrar opcions i grups de seminaris"
+  },
+  "seminarGroupsWarningTooltip": {
+    "message": "Es detecten diversos grups de seminaris per a aquesta assignatura"
+  },
+  "seminarGroupsWarningTitle": {
+    "message": "Diversos grups de seminaris detectats"
+  },
+  "seminarGroupsWarningHint": {
+    "message": "L’horari pot mostrar tots els grups (p. ex. 301, 302, 303). Tria només els que vols exportar o sincronitzar."
+  },
+  "seminarGroupLabel": {
+    "message": "Grup {group}"
+  },
+  "seminarGroupsSelectAll": {
+    "message": "Tots els grups"
+  },
+  "seminarGroupsSelectNone": {
+    "message": "Cap grup"
+  },
+  "seminarGroupsDetectedStatus": {
+    "message": "{n} assignatura(es) amb diversos grups de seminaris: revisa l’avís ⚠️"
   },
   "googleStepOptions": {
     "message": "5. Opcions i format dels esdeveniments"

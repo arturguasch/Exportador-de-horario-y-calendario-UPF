@@ -13,12 +13,7 @@ let I18N = {};
 const SUPPORTED_LANGUAGES = ["ca", "es", "en"];
 
 function getDefaultLanguage() {
-  const uiLanguage = (typeof chrome !== "undefined" && chrome.i18n?.getUILanguage)
-    ? chrome.i18n.getUILanguage()
-    : "ca";
-
-  const baseLanguage = String(uiLanguage || "ca").toLowerCase().split("-")[0];
-  return SUPPORTED_LANGUAGES.includes(baseLanguage) ? baseLanguage : "ca";
+  return "ca";
 }
 
 async function loadLocaleMessages(language) {
@@ -40,10 +35,14 @@ async function loadLocaleMessages(language) {
 }
 
 const DEFAULT_SETTINGS = {
-  language: getDefaultLanguage(),
+  language: "ca",
   themeMode: "system",
   preferredMode: "google",
   googleCalendarName: "",
+  googleCalendarMode: "single",
+  googleCalendarColors: {},
+  googleSubjectCalendarNames: {},
+  savedColors: [],
   subjectColors: {},
   subjectTypeColors: {},
   formats: {
@@ -120,10 +119,74 @@ function getGoogleColorPresets() {
   return FALLBACK_COLOR_PRESETS;
 }
 
+function getCustomColorPrefix() {
+  return window.UpfGoogleCalendar?.CUSTOM_COLOR_PREFIX || "custom:";
+}
+
+function isCustomColorRef(ref) {
+  return typeof ref === "string" && ref.startsWith(getCustomColorPrefix());
+}
+
+function normalizePickerHex(hex) {
+  const raw = String(hex || "").trim();
+  if (!raw) return null;
+  const withHash = raw.startsWith("#") ? raw : `#${raw}`;
+  return /^#[0-9a-fA-F]{6}$/.test(withHash) ? withHash.toLowerCase() : null;
+}
+
+function formatCustomColorRef(hex) {
+  const normalized = normalizePickerHex(hex);
+  return normalized ? `${getCustomColorPrefix()}${normalized}` : null;
+}
+
+function getHexFromColorRef(ref) {
+  if (!ref) return null;
+  if (isCustomColorRef(ref)) {
+    return normalizePickerHex(ref.slice(getCustomColorPrefix().length));
+  }
+  const presets = getGoogleColorPresets();
+  return presets.find((preset) => preset.id === ref)?.hex || null;
+}
+
+const MAX_SAVED_COLORS = 10;
+
+function ensureSavedColors() {
+  if (!Array.isArray(settings.savedColors)) {
+    settings.savedColors = [];
+  }
+}
+
+function addSavedColor(hex) {
+  const normalized = normalizePickerHex(hex);
+  if (!normalized) return false;
+  ensureSavedColors();
+  settings.savedColors = settings.savedColors.filter((entry) => entry !== normalized);
+  settings.savedColors.unshift(normalized);
+  if (settings.savedColors.length > MAX_SAVED_COLORS) {
+    settings.savedColors = settings.savedColors.slice(0, MAX_SAVED_COLORS);
+  }
+  return true;
+}
+
+function removeSavedColor(hex) {
+  const normalized = normalizePickerHex(hex);
+  if (!normalized) return;
+  ensureSavedColors();
+  settings.savedColors = settings.savedColors.filter((entry) => entry !== normalized);
+}
+
 let settings = structuredClone(DEFAULT_SETTINGS);
 let detectedSubjects = [];
 let selectedSubjects = new Set();
 let subjectTypeFlags = {};
+/** @type {Record<string, string[]>} */
+let subjectSeminarGroups = {};
+/** @type {Record<string, Set<string>>} */
+let selectedSeminarGroups = {};
+/** Subjects whose multi-group warning the user has already interacted with. */
+let acknowledgedSeminarGroupWarnings = new Set();
+/** Subjects where the user has already clicked a seminar group chip (not Tots/Cap). */
+let seminarGroupChipInteracted = new Set();
 const systemColorScheme = window.matchMedia("(prefers-color-scheme: dark)");
 
 const els = {
@@ -131,6 +194,13 @@ const els = {
   endDate: document.getElementById("endDate"),
   calendarName: document.getElementById("calendarName"),
   googleCalendarName: document.getElementById("googleCalendarName"),
+  googleCalendarsStep: document.getElementById("googleCalendarsStep"),
+  googleCalendarModePicker: document.getElementById("googleCalendarModePicker"),
+  googleCalendarSinglePanel: document.getElementById("googleCalendarSinglePanel"),
+  googleCalendarPerSubjectPanel: document.getElementById("googleCalendarPerSubjectPanel"),
+  googleCalendarPerSubjectList: document.getElementById("googleCalendarPerSubjectList"),
+  googleCalendarPerSubjectEmpty: document.getElementById("googleCalendarPerSubjectEmpty"),
+  googleCalendarSingleColorSlot: document.getElementById("googleCalendarSingleColorSlot"),
   fileName: document.getElementById("fileName"),
   includeHolidays: document.getElementById("includeHolidays"),
   includeDescription: document.getElementById("includeDescription"),
@@ -190,10 +260,19 @@ const els = {
   resetFormatSettingsBtn: document.getElementById("resetFormatSettingsBtn"),
   modeManualBtn: document.getElementById("modeManualBtn"),
   modeGoogleBtn: document.getElementById("modeGoogleBtn"),
+  colorPaletteBackdrop: document.getElementById("colorPaletteBackdrop"),
   colorPalettePopover: document.getElementById("colorPalettePopover"),
   colorPaletteGrid: document.getElementById("colorPaletteGrid"),
+  colorPaletteSavedGrid: document.getElementById("colorPaletteSavedGrid"),
+  colorPaletteCustomWrap: document.getElementById("colorPaletteCustomWrap"),
+  colorPaletteSV: document.getElementById("colorPaletteSV"),
+  colorPaletteSVThumb: document.getElementById("colorPaletteSVThumb"),
+  colorPaletteHue: document.getElementById("colorPaletteHue"),
+  colorPaletteHueThumb: document.getElementById("colorPaletteHueThumb"),
+  colorPaletteEyedropperBtn: document.getElementById("colorPaletteEyedropperBtn"),
+  colorPalettePreview: document.getElementById("colorPalettePreview"),
+  colorPaletteHexInput: document.getElementById("colorPaletteHexInput"),
   googleConnectStep: document.getElementById("googleConnectStep"),
-  googleCalendarStep: document.getElementById("googleCalendarStep"),
   datesCard: document.getElementById("datesCard"),
   subjectsCard: document.getElementById("subjectsCard"),
 };
@@ -201,6 +280,12 @@ const els = {
 let activeColorSubject = null;
 let activeColorKind = "main";
 let colorPaletteBuilt = false;
+let customPickerHue = 214;
+let customPickerSat = 82;
+let customPickerVal = 100;
+let customPickerDragging = null;
+let eyedropperActive = false;
+let skipHexBlurApply = false;
 let ignoreColorPaletteOutsideClick = false;
 let ignoreFormatBlockOutsideClick = false;
 let activeFormatBlock = null;
@@ -348,21 +433,42 @@ function setStatus(message, type = "", options = {}) {
   }
 }
 
-function appendStatusDetails(lines) {
+function appendStatusDetails(lines, { open = false } = {}) {
   if (!els.status || !lines?.length) return;
-  const detail = document.createElement("div");
-  detail.className = "status-details";
-  detail.textContent = lines.join("\n");
-  els.status.append(detail);
+
+  const wrap = document.createElement("details");
+  wrap.className = "status-details";
+  if (open) wrap.open = true;
+
+  const summary = document.createElement("summary");
+  summary.className = "status-details-summary";
+  summary.textContent = t("statusTechnicalDetails");
+
+  const body = document.createElement("div");
+  body.className = "status-details-body";
+  body.textContent = lines.join("\n");
+
+  wrap.append(summary, body);
+  els.status.append(wrap);
 }
 
 async function persistSessionState() {
   if (!chrome.storage.session) return;
 
+  const seminarGroupsSelected = {};
+  for (const [subject, groups] of Object.entries(selectedSeminarGroups)) {
+    seminarGroupsSelected[subject] = [...groups];
+  }
+
   await chrome.storage.session.set({
     [SESSION_KEY]: {
       detectedSubjects,
       selectedSubjects: [...selectedSubjects],
+      subjectTypeFlags,
+      subjectSeminarGroups,
+      selectedSeminarGroups: seminarGroupsSelected,
+      acknowledgedSeminarGroupWarnings: [...acknowledgedSeminarGroupWarnings],
+      seminarGroupChipInteracted: [...seminarGroupChipInteracted],
       startDate: els.startDate.value,
       endDate: els.endDate.value,
       includeHolidays: els.includeHolidays.checked,
@@ -382,6 +488,41 @@ async function restoreSessionState() {
   if (state.endDate) els.endDate.value = state.endDate;
   if (state.includeHolidays !== undefined) els.includeHolidays.checked = state.includeHolidays;
   if (state.includeDescription !== undefined) els.includeDescription.checked = state.includeDescription;
+
+  if (state.subjectSeminarGroups && typeof state.subjectSeminarGroups === "object") {
+    subjectSeminarGroups = state.subjectSeminarGroups;
+  }
+
+  if (state.subjectTypeFlags && typeof state.subjectTypeFlags === "object") {
+    subjectTypeFlags = state.subjectTypeFlags;
+  } else {
+    // Sessions antigues: reconstrueix els flags a partir de colors i grups desats.
+    subjectTypeFlags = {};
+    const subjects = Array.isArray(state.detectedSubjects) ? state.detectedSubjects : [];
+    for (const subject of subjects) {
+      const types = settings.subjectTypeColors?.[subject];
+      const hasGroups = Array.isArray(subjectSeminarGroups[subject]) && subjectSeminarGroups[subject].length > 0;
+      subjectTypeFlags[subject] = {
+        seminar: Boolean(types?.seminar) || hasGroups,
+        exam: Boolean(types?.exam),
+      };
+    }
+  }
+
+  if (state.selectedSeminarGroups && typeof state.selectedSeminarGroups === "object") {
+    selectedSeminarGroups = {};
+    for (const [subject, groups] of Object.entries(state.selectedSeminarGroups)) {
+      selectedSeminarGroups[subject] = new Set(Array.isArray(groups) ? groups : []);
+    }
+  }
+
+  if (Array.isArray(state.acknowledgedSeminarGroupWarnings)) {
+    acknowledgedSeminarGroupWarnings = new Set(state.acknowledgedSeminarGroupWarnings);
+  }
+
+  if (Array.isArray(state.seminarGroupChipInteracted)) {
+    seminarGroupChipInteracted = new Set(state.seminarGroupChipInteracted);
+  }
 
   if (Array.isArray(state.detectedSubjects) && state.detectedSubjects.length) {
     detectedSubjects = state.detectedSubjects;
@@ -474,6 +615,102 @@ function buildSubjectTypeFlags(items) {
   return flags;
 }
 
+function normalizeSeminarGroup(value) {
+  return clean(value);
+}
+
+function buildSubjectSeminarGroups(items) {
+  const map = {};
+
+  for (const item of items) {
+    if (!shouldExport(item, false)) continue;
+    if (typeKey(item) !== "seminar") continue;
+
+    const subject = normalizeSubject(item);
+    if (!subject) continue;
+
+    const group = normalizeSeminarGroup(item.grup);
+    if (!group) continue;
+
+    if (!map[subject]) map[subject] = new Set();
+    map[subject].add(group);
+  }
+
+  const result = {};
+  for (const [subject, groups] of Object.entries(map)) {
+    result[subject] = [...groups].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  }
+  return result;
+}
+
+function getSeminarGroupsForSubject(subject) {
+  return subjectSeminarGroups[subject] || [];
+}
+
+function hasMultipleSeminarGroups(subject) {
+  return getSeminarGroupsForSubject(subject).length > 1;
+}
+
+function hasPendingSeminarGroupWarning(subject) {
+  return hasMultipleSeminarGroups(subject) && !acknowledgedSeminarGroupWarnings.has(subject);
+}
+
+function acknowledgeSeminarGroupWarning(subject) {
+  if (!hasMultipleSeminarGroups(subject)) return;
+  acknowledgedSeminarGroupWarnings.add(subject);
+}
+
+function syncSelectedSeminarGroups(subjects, { reset = false } = {}) {
+  const next = {};
+
+  for (const subject of subjects) {
+    const available = getSeminarGroupsForSubject(subject);
+    if (!available.length) continue;
+
+    const previous = selectedSeminarGroups[subject];
+    if (!reset && previous instanceof Set) {
+      const kept = available.filter((group) => previous.has(group));
+      next[subject] = new Set(kept.length ? kept : available);
+    } else {
+      next[subject] = new Set(available);
+    }
+  }
+
+  selectedSeminarGroups = next;
+}
+
+function isSeminarGroupSelected(subject, group) {
+  const available = getSeminarGroupsForSubject(subject);
+  if (available.length <= 1) return true;
+
+  const selected = selectedSeminarGroups[subject];
+  if (!(selected instanceof Set)) return true;
+  return selected.has(group);
+}
+
+function isItemAllowedBySeminarGroup(item) {
+  if (typeKey(item) !== "seminar") return true;
+
+  const subject = normalizeSubject(item);
+  if (!subject) return false;
+
+  const available = getSeminarGroupsForSubject(subject);
+  if (available.length <= 1) return true;
+
+  const group = normalizeSeminarGroup(item.grup);
+  if (!group) return false;
+  return isSeminarGroupSelected(subject, group);
+}
+
+function setSeminarGroupSelected(subject, group, enabled) {
+  if (!selectedSeminarGroups[subject]) {
+    selectedSeminarGroups[subject] = new Set(getSeminarGroupsForSubject(subject));
+  }
+
+  if (enabled) selectedSeminarGroups[subject].add(group);
+  else selectedSeminarGroups[subject].delete(group);
+}
+
 function pickDefaultAltColor(subject, kind) {
   const presets = getGoogleColorPresets();
   if (!presets.length) return null;
@@ -503,6 +740,9 @@ function assignDefaultTypeColors(subjects) {
 }
 
 function getColorIdForTarget(subject, kind = "main") {
+  if (kind === "calendar") {
+    return getCalendarColorId(subject);
+  }
   if (kind === "main") {
     return getSubjectColorId(subject);
   }
@@ -512,6 +752,11 @@ function getColorIdForTarget(subject, kind = "main") {
 }
 
 function setColorForTarget(subject, kind, colorId) {
+  if (kind === "calendar") {
+    ensureCalendarColorsMap();
+    settings.googleCalendarColors[subject] = colorId;
+    return;
+  }
   if (kind === "main") {
     settings.subjectColors[subject] = colorId;
     return;
@@ -519,6 +764,52 @@ function setColorForTarget(subject, kind, colorId) {
 
   const setting = ensureSubjectTypeSetting(subject, kind);
   setting.color = colorId;
+}
+
+const GOOGLE_SINGLE_CALENDAR_KEY = "__single__";
+
+function ensureCalendarColorsMap() {
+  if (!settings.googleCalendarColors || typeof settings.googleCalendarColors !== "object") {
+    settings.googleCalendarColors = {};
+  }
+}
+
+function ensureSubjectCalendarNamesMap() {
+  if (!settings.googleSubjectCalendarNames || typeof settings.googleSubjectCalendarNames !== "object") {
+    settings.googleSubjectCalendarNames = {};
+  }
+}
+
+function getGoogleCalendarMode() {
+  return settings.googleCalendarMode === "perSubject" ? "perSubject" : "single";
+}
+
+function getCalendarColorId(key) {
+  ensureCalendarColorsMap();
+  if (settings.googleCalendarColors[key]) {
+    return settings.googleCalendarColors[key];
+  }
+  if (key !== GOOGLE_SINGLE_CALENDAR_KEY) {
+    return getSubjectColorId(key);
+  }
+  const presets = getGoogleColorPresets();
+  return presets[14]?.id || presets[0]?.id || null;
+}
+
+function getCalendarColorHex(key) {
+  return getHexFromColorRef(getCalendarColorId(key));
+}
+
+function getSubjectCalendarName(subject) {
+  ensureSubjectCalendarNamesMap();
+  const stored = settings.googleSubjectCalendarNames[subject];
+  if (typeof stored === "string" && stored.trim()) return stored.trim();
+  return subject;
+}
+
+function setSubjectCalendarName(subject, name) {
+  ensureSubjectCalendarNamesMap();
+  settings.googleSubjectCalendarNames[subject] = name;
 }
 
 function getEventColorId(item) {
@@ -576,11 +867,444 @@ function getSubjectColorPreset(subject, kind = "main") {
   if (!presets.length) return null;
 
   const selectedId = getColorIdForTarget(subject, kind);
-  return presets.find((preset) => preset.id === selectedId) || presets[0];
+  const hex = getHexFromColorRef(selectedId);
+  if (hex) return { id: selectedId, hex };
+  return presets[0];
+}
+
+function hexToRgb(hex) {
+  const normalized = normalizePickerHex(hex);
+  if (!normalized) return null;
+  const value = parseInt(normalized.slice(1), 16);
+  return {
+    r: (value >> 16) & 255,
+    g: (value >> 8) & 255,
+    b: value & 255,
+  };
+}
+
+function rgbToHex(r, g, b) {
+  const clamp = (channel) => Math.max(0, Math.min(255, Math.round(channel)));
+  return `#${[clamp(r), clamp(g), clamp(b)]
+    .map((channel) => channel.toString(16).padStart(2, "0"))
+    .join("")}`;
+}
+
+function rgbToHsv(r, g, b) {
+  const rn = r / 255;
+  const gn = g / 255;
+  const bn = b / 255;
+  const max = Math.max(rn, gn, bn);
+  const min = Math.min(rn, gn, bn);
+  const delta = max - min;
+  let hue = 0;
+
+  if (delta !== 0) {
+    if (max === rn) hue = ((gn - bn) / delta + (gn < bn ? 6 : 0)) * 60;
+    else if (max === gn) hue = ((bn - rn) / delta + 2) * 60;
+    else hue = ((rn - gn) / delta + 4) * 60;
+  }
+
+  return {
+    h: hue,
+    s: max === 0 ? 0 : (delta / max) * 100,
+    v: max * 100,
+  };
+}
+
+function hsvToRgb(h, s, v) {
+  const sn = Math.max(0, Math.min(100, s)) / 100;
+  const vn = Math.max(0, Math.min(100, v)) / 100;
+  const hn = (((h % 360) + 360) % 360) / 60;
+  const i = Math.floor(hn);
+  const f = hn - i;
+  const p = vn * (1 - sn);
+  const q = vn * (1 - sn * f);
+  const t = vn * (1 - sn * (1 - f));
+  let r;
+  let g;
+  let b;
+
+  switch (i) {
+    case 0:
+      r = vn;
+      g = t;
+      b = p;
+      break;
+    case 1:
+      r = q;
+      g = vn;
+      b = p;
+      break;
+    case 2:
+      r = p;
+      g = vn;
+      b = t;
+      break;
+    case 3:
+      r = p;
+      g = q;
+      b = vn;
+      break;
+    case 4:
+      r = t;
+      g = p;
+      b = vn;
+      break;
+    default:
+      r = vn;
+      g = p;
+      b = q;
+  }
+
+  return { r: r * 255, g: g * 255, b: b * 255 };
+}
+
+function getCustomPickerHex() {
+  const { r, g, b } = hsvToRgb(customPickerHue, customPickerSat, customPickerVal);
+  return normalizePickerHex(rgbToHex(r, g, b));
+}
+
+function isAchromaticHsv(hsv) {
+  return hsv.s < 0.5;
+}
+
+function setCustomPickerFromHex(hex) {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return;
+  const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+
+  if (isAchromaticHsv(hsv)) {
+    if (hsv.v < 0.5) {
+      // Negre pur: mantenim to i saturació per no bloquejar el selector.
+      customPickerVal = 0;
+    } else if (hsv.v > 99.5) {
+      // Blanc pur: mateix tractament per no saltar al cantó.
+      customPickerVal = 100;
+    } else {
+      customPickerVal = hsv.v;
+      customPickerSat = 0;
+    }
+  } else {
+    customPickerHue = hsv.h;
+    customPickerSat = hsv.s;
+    customPickerVal = hsv.v;
+  }
+
+  updateCustomPickerUI();
+}
+
+function releaseHexInputFocus() {
+  if (!els.colorPaletteHexInput || document.activeElement !== els.colorPaletteHexInput) return;
+  skipHexBlurApply = true;
+  els.colorPaletteHexInput.blur();
+}
+
+function syncHexInputFromPicker() {
+  const hex = getCustomPickerHex();
+  if (!hex) return;
+  if (els.colorPalettePreview) {
+    els.colorPalettePreview.style.backgroundColor = hex;
+  }
+  if (!els.colorPaletteHexInput) return;
+  if (document.activeElement === els.colorPaletteHexInput) return;
+  els.colorPaletteHexInput.value = hex;
+  els.colorPaletteHexInput.classList.remove("is-invalid");
+}
+
+function updateCustomPickerUI() {
+  if (els.colorPaletteSV) {
+    els.colorPaletteSV.style.setProperty("--picker-hue", String(Math.round(customPickerHue)));
+  }
+  if (els.colorPaletteSVThumb) {
+    els.colorPaletteSVThumb.style.left = `${customPickerSat}%`;
+    els.colorPaletteSVThumb.style.top = `${100 - customPickerVal}%`;
+  }
+  if (els.colorPaletteHueThumb) {
+    els.colorPaletteHueThumb.style.left = `${(customPickerHue / 360) * 100}%`;
+  }
+  if (els.colorPaletteSV) {
+    els.colorPaletteSV.setAttribute("aria-valuenow", String(Math.round(customPickerSat)));
+  }
+  if (els.colorPaletteHue) {
+    els.colorPaletteHue.setAttribute("aria-valuenow", String(Math.round(customPickerHue)));
+  }
+  syncHexInputFromPicker();
+}
+
+function parseHexInputValue(rawValue) {
+  const raw = String(rawValue || "").trim();
+  if (!raw) return null;
+  return normalizePickerHex(raw.startsWith("#") ? raw : `#${raw}`);
+}
+
+function applyHexInputValue({ commit = false } = {}) {
+  const hex = parseHexInputValue(els.colorPaletteHexInput?.value);
+  if (!hex) {
+    els.colorPaletteHexInput?.classList.add("is-invalid");
+    return false;
+  }
+  els.colorPaletteHexInput?.classList.remove("is-invalid");
+  setCustomPickerFromHex(hex);
+  previewCustomPickerColor();
+  if (commit) commitCustomPickerColor();
+  return true;
+}
+
+async function pickColorFromScreen() {
+  if (!window.EyeDropper || eyedropperActive) return;
+
+  const subject = activeColorSubject;
+  const kind = activeColorKind;
+  if (!subject) return;
+
+  eyedropperActive = true;
+  ignoreColorPaletteOutsideClick = true;
+
+  try {
+    const dropper = new EyeDropper();
+    const result = await dropper.open();
+    const hex = normalizePickerHex(result?.sRGBHex);
+    if (!hex) return;
+
+    activeColorSubject = subject;
+    activeColorKind = kind;
+    setCustomPickerFromHex(hex);
+    releaseHexInputFocus();
+    syncHexInputFromPicker();
+    await commitCustomPickerColor();
+  } catch (_) {
+    // User cancelled the eyedropper.
+  } finally {
+    eyedropperActive = false;
+    ignoreColorPaletteOutsideClick = false;
+  }
+}
+
+function updateEyedropperAvailability() {
+  if (!els.colorPaletteEyedropperBtn) return;
+  els.colorPaletteEyedropperBtn.classList.toggle("is-hidden", !window.EyeDropper);
+}
+
+function getPointerRatio(element, clientX, clientY) {
+  const rect = element.getBoundingClientRect();
+  if (!rect.width || !rect.height) return { x: 0, y: 0 };
+  return {
+    x: Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)),
+    y: Math.max(0, Math.min(1, (clientY - rect.top) / rect.height)),
+  };
+}
+
+function updateCustomPickerFromSv(clientX, clientY) {
+  if (!els.colorPaletteSV) return;
+  const { x, y } = getPointerRatio(els.colorPaletteSV, clientX, clientY);
+  customPickerSat = x * 100;
+  customPickerVal = (1 - y) * 100;
+  updateCustomPickerUI();
+}
+
+function updateCustomPickerFromHue(clientX) {
+  if (!els.colorPaletteHue) return;
+  const { x } = getPointerRatio(els.colorPaletteHue, clientX, 0);
+  customPickerHue = x * 360;
+  updateCustomPickerUI();
+}
+
+async function applyColorRef(ref, { closePalette = true } = {}) {
+  if (!ref || !activeColorSubject) return;
+
+  const subject = activeColorSubject;
+  const kind = activeColorKind;
+  setColorForTarget(subject, kind, ref);
+  await saveSettingsData();
+  updatePaletteSelection(ref);
+  if (kind === "calendar") {
+    renderGoogleCalendarsStep();
+  } else {
+    renderSubjects(detectedSubjects, true);
+  }
+  if (closePalette) closeColorPalette();
+}
+
+function previewCustomPickerColor() {
+  const ref = formatCustomColorRef(getCustomPickerHex());
+  if (!ref || !activeColorSubject) return;
+
+  setColorForTarget(activeColorSubject, activeColorKind, ref);
+  if (activeColorKind === "calendar") {
+    renderGoogleCalendarsStep();
+  } else {
+    renderSubjects(detectedSubjects, true);
+  }
+}
+
+async function commitCustomPickerColor() {
+  const ref = formatCustomColorRef(getCustomPickerHex());
+  if (!ref || !activeColorSubject) return;
+
+  setColorForTarget(activeColorSubject, activeColorKind, ref);
+  await saveSettingsData();
+  updatePaletteSelection(ref);
+  if (activeColorKind === "calendar") {
+    renderGoogleCalendarsStep();
+  } else {
+    renderSubjects(detectedSubjects, true);
+  }
+}
+
+function renderSavedColorsBar() {
+  if (!els.colorPaletteSavedGrid) return;
+  ensureSavedColors();
+  els.colorPaletteSavedGrid.textContent = "";
+
+  for (const hex of settings.savedColors) {
+    const slot = document.createElement("div");
+    slot.className = "palette-saved-slot";
+
+    const swatch = document.createElement("button");
+    swatch.type = "button";
+    swatch.className = "palette-swatch palette-saved-swatch";
+    swatch.style.backgroundColor = hex;
+    swatch.dataset.hex = hex;
+    swatch.setAttribute("aria-label", hex);
+    swatch.addEventListener("click", async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const ref = formatCustomColorRef(hex);
+      if (!ref) return;
+      await applyColorRef(ref, { closePalette: true });
+    });
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "palette-saved-remove";
+    remove.setAttribute("aria-label", t("colorPaletteRemoveSaved"));
+    remove.textContent = "\u00D7";
+    remove.addEventListener("click", async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      removeSavedColor(hex);
+      await saveSettingsData();
+      renderSavedColorsBar();
+      updatePaletteSelection(getColorIdForTarget(activeColorSubject, activeColorKind));
+    });
+
+    slot.append(swatch, remove);
+    els.colorPaletteSavedGrid.append(slot);
+  }
+
+  const add = document.createElement("button");
+  add.type = "button";
+  add.className = "palette-saved-add";
+  add.setAttribute("aria-label", t("colorPaletteSaveAria"));
+  add.textContent = "+";
+  add.addEventListener("click", async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const hex = getCustomPickerHex();
+    if (!addSavedColor(hex)) return;
+    await saveSettingsData();
+    renderSavedColorsBar();
+  });
+  els.colorPaletteSavedGrid.append(add);
+}
+
+function finishCustomPickerDrag() {
+  if (!customPickerDragging) return;
+  customPickerDragging = null;
+  commitCustomPickerColor();
+}
+
+function ensureColorPaletteCustom() {
+  if (!els.colorPaletteSV || els.colorPaletteSV.dataset.bound) return;
+  els.colorPaletteSV.dataset.bound = "1";
+
+  const onSvPointerDown = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    releaseHexInputFocus();
+    customPickerDragging = "sv";
+    updateCustomPickerFromSv(event.clientX, event.clientY);
+    previewCustomPickerColor();
+    els.colorPaletteSV.setPointerCapture(event.pointerId);
+  };
+
+  const onHuePointerDown = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    releaseHexInputFocus();
+    customPickerDragging = "hue";
+    updateCustomPickerFromHue(event.clientX);
+    previewCustomPickerColor();
+    els.colorPaletteHue.setPointerCapture(event.pointerId);
+  };
+
+  els.colorPaletteSV.addEventListener("pointerdown", onSvPointerDown);
+  els.colorPaletteHue.addEventListener("pointerdown", onHuePointerDown);
+
+  document.addEventListener("pointermove", (event) => {
+    if (customPickerDragging === "sv") {
+      updateCustomPickerFromSv(event.clientX, event.clientY);
+      previewCustomPickerColor();
+    } else if (customPickerDragging === "hue") {
+      updateCustomPickerFromHue(event.clientX);
+      previewCustomPickerColor();
+    }
+  });
+
+  document.addEventListener("pointerup", finishCustomPickerDrag);
+  document.addEventListener("pointercancel", finishCustomPickerDrag);
+
+  els.colorPaletteEyedropperBtn?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    pickColorFromScreen();
+  });
+
+  els.colorPaletteHexInput?.addEventListener("input", () => {
+    const hex = parseHexInputValue(els.colorPaletteHexInput.value);
+    els.colorPaletteHexInput.classList.toggle("is-invalid", Boolean(els.colorPaletteHexInput.value.trim()) && !hex);
+    if (hex && els.colorPalettePreview) {
+      els.colorPalettePreview.style.backgroundColor = hex;
+    }
+    if (!hex) return;
+    setCustomPickerFromHex(hex);
+    previewCustomPickerColor();
+  });
+
+  els.colorPaletteHexInput?.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    applyHexInputValue({ commit: true });
+  });
+
+  els.colorPaletteHexInput?.addEventListener("blur", () => {
+    if (skipHexBlurApply) {
+      skipHexBlurApply = false;
+      syncHexInputFromPicker();
+      return;
+    }
+    if (!els.colorPaletteHexInput?.value.trim()) {
+      syncHexInputFromPicker();
+      els.colorPaletteHexInput.classList.remove("is-invalid");
+      return;
+    }
+    const typedHex = parseHexInputValue(els.colorPaletteHexInput.value);
+    const currentHex = getCustomPickerHex();
+    if (typedHex && typedHex === currentHex) {
+      els.colorPaletteHexInput.classList.remove("is-invalid");
+      return;
+    }
+    applyHexInputValue({ commit: true });
+  });
+
+  updateEyedropperAvailability();
+  updateCustomPickerUI();
 }
 
 function buildColorPaletteGrid() {
   if (!els.colorPaletteGrid) return;
+  ensureColorPaletteCustom();
   if (colorPaletteBuilt && els.colorPaletteGrid.childElementCount > 0) return;
 
   const presets = getGoogleColorPresets();
@@ -598,10 +1322,7 @@ function buildColorPaletteGrid() {
       event.stopPropagation();
       if (!activeColorSubject) return;
 
-      setColorForTarget(activeColorSubject, activeColorKind, color.id);
-      await saveSettingsData();
-      closeColorPalette();
-      renderSubjects(detectedSubjects, true);
+      await applyColorRef(color.id, { closePalette: true });
     });
     els.colorPaletteGrid.append(button);
   }
@@ -609,39 +1330,42 @@ function buildColorPaletteGrid() {
   colorPaletteBuilt = presets.length > 0;
 }
 
-function updatePaletteSelection(selectedId) {
-  if (!els.colorPaletteGrid) return;
+function updatePaletteSelection(selectedRef) {
+  const isCustom = isCustomColorRef(selectedRef);
+  const hex = getHexFromColorRef(selectedRef);
 
-  els.colorPaletteGrid.querySelectorAll(".palette-swatch").forEach((button) => {
-    button.classList.toggle("selected", button.dataset.colorId === selectedId);
+  els.colorPaletteGrid?.querySelectorAll(".palette-swatch").forEach((button) => {
+    button.classList.toggle("selected", !isCustom && button.dataset.colorId === selectedRef);
   });
+
+  els.colorPaletteSavedGrid?.querySelectorAll(".palette-saved-swatch").forEach((button) => {
+    button.classList.toggle("selected", isCustom && button.dataset.hex === hex);
+  });
+
+  if (!hex) return;
+  if (getCustomPickerHex() === hex) {
+    syncHexInputFromPicker();
+    return;
+  }
+  setCustomPickerFromHex(hex);
 }
 
-function positionColorPalette(anchor) {
-  if (!els.colorPalettePopover || !anchor) return;
+function positionColorPalette() {
+  if (!els.colorPalettePopover) return;
 
-  const margin = 8;
-  const rect = anchor.getBoundingClientRect();
-  const popoverWidth = els.colorPalettePopover.offsetWidth;
+  const margin = 12;
   const popoverHeight = els.colorPalettePopover.offsetHeight;
+  const preferredTop = 72;
+  const maxTop = Math.max(margin, window.innerHeight - popoverHeight - margin);
 
-  let left = rect.right - popoverWidth;
-  let top = rect.bottom + 6;
-
-  left = Math.max(margin, Math.min(left, window.innerWidth - popoverWidth - margin));
-  if (top + popoverHeight > window.innerHeight - margin) {
-    top = rect.top - popoverHeight - 6;
-  }
-  top = Math.max(margin, top);
-
-  els.colorPalettePopover.style.left = `${left}px`;
-  els.colorPalettePopover.style.top = `${top}px`;
+  els.colorPalettePopover.style.top = `${Math.min(preferredTop, maxTop)}px`;
 }
 
 function openColorPalette(subject, anchor, kind = "main") {
   if (!document.body.classList.contains("mode-google")) return;
 
   buildColorPaletteGrid();
+  renderSavedColorsBar();
   if (!els.colorPalettePopover) return;
   if (!els.colorPaletteGrid?.childElementCount) return;
 
@@ -654,6 +1378,9 @@ function openColorPalette(subject, anchor, kind = "main") {
     return;
   }
 
+  if (els.colorPaletteBackdrop?.parentElement !== document.body) {
+    document.body.append(els.colorPaletteBackdrop);
+  }
   if (els.colorPalettePopover.parentElement !== document.body) {
     document.body.append(els.colorPalettePopover);
   }
@@ -661,6 +1388,7 @@ function openColorPalette(subject, anchor, kind = "main") {
   activeColorSubject = subject;
   activeColorKind = kind;
   updatePaletteSelection(getColorIdForTarget(subject, kind) || getGoogleColorPresets()[0]?.id);
+  updateEyedropperAvailability();
 
   // Opening the palette can resize the popup; ignore the same-tick outside click.
   ignoreColorPaletteOutsideClick = true;
@@ -668,6 +1396,8 @@ function openColorPalette(subject, anchor, kind = "main") {
     ignoreColorPaletteOutsideClick = false;
   }, 50);
 
+  els.colorPaletteBackdrop?.classList.remove("hidden");
+  els.colorPaletteBackdrop?.setAttribute("aria-hidden", "false");
   els.colorPalettePopover.classList.remove("hidden");
   els.colorPalettePopover.setAttribute("aria-hidden", "false");
   anchor.setAttribute("aria-expanded", "true");
@@ -676,13 +1406,22 @@ function openColorPalette(subject, anchor, kind = "main") {
     if (trigger !== anchor) trigger.setAttribute("aria-expanded", "false");
   });
 
-  requestAnimationFrame(() => positionColorPalette(anchor));
+  requestAnimationFrame(() => positionColorPalette());
+}
+
+function repositionOpenColorPalette() {
+  if (els.colorPalettePopover?.classList.contains("hidden")) return;
+  positionColorPalette();
 }
 
 function closeColorPalette() {
   activeColorSubject = null;
   activeColorKind = "main";
 
+  if (els.colorPaletteBackdrop) {
+    els.colorPaletteBackdrop.classList.add("hidden");
+    els.colorPaletteBackdrop.setAttribute("aria-hidden", "true");
+  }
   if (els.colorPalettePopover) {
     els.colorPalettePopover.classList.add("hidden");
     els.colorPalettePopover.setAttribute("aria-hidden", "true");
@@ -729,6 +1468,7 @@ function createSubjectCheckbox(subject) {
     if (checkbox.checked) selectedSubjects.add(subject);
     else selectedSubjects.delete(subject);
     persistSessionState();
+    renderGoogleCalendarsStep();
   });
   return checkbox;
 }
@@ -737,7 +1477,16 @@ function fillSubjectTypeColorSlot(slot, subject, kind, enabled) {
   slot.replaceChildren();
   if (enabled) {
     slot.append(createColorPickerTrigger(subject, kind));
+    return;
   }
+
+  const preset = getSubjectColorPreset(subject, "main");
+  const inherited = document.createElement("span");
+  inherited.className = "subject-type-color-inherited";
+  inherited.title = t("googleAltColorInherited");
+  inherited.setAttribute("aria-label", t("googleAltColorInherited"));
+  inherited.style.backgroundColor = preset?.hex || "#616161";
+  slot.append(inherited);
 }
 
 function createSubjectTypeToggle(subject, kind, colorSlot) {
@@ -782,22 +1531,167 @@ function createSubjectTypeToggle(subject, kind, colorSlot) {
 
 function createSubjectTypeRow(subject, kind) {
   const setting = ensureSubjectTypeSetting(subject, kind);
+  const block = document.createElement("div");
+  block.className = "subject-type-block";
+
   const row = document.createElement("div");
   row.className = "subject-type-row";
+
+  const main = document.createElement("div");
+  main.className = "subject-type-main";
 
   const label = document.createElement("span");
   label.className = "subject-type-label";
   label.textContent = t(kind === "seminar" ? "googleColorSeminar" : "googleColorExam");
 
+  const hint = document.createElement("p");
+  hint.className = "mini subject-type-hint";
+  hint.textContent = t(kind === "seminar" ? "googleAltColorSeminarHint" : "googleAltColorExamHint");
+
   const colorSlot = document.createElement("div");
   colorSlot.className = "subject-type-color-slot";
   fillSubjectTypeColorSlot(colorSlot, subject, kind, setting.enabled);
 
-  row.append(label, createSubjectTypeToggle(subject, kind, colorSlot), colorSlot);
-  return row;
+  const controls = document.createElement("div");
+  controls.className = "subject-type-controls";
+  controls.append(createSubjectTypeToggle(subject, kind, colorSlot), colorSlot);
+
+  main.append(label, controls);
+  row.append(main, hint);
+  block.append(row);
+  return block;
 }
 
-function createSubjectMainRow(subject, { expandButton = null } = {}) {
+function hideSeminarGroupTooltip() {
+  document.querySelectorAll(".subject-group-tooltip-floating").forEach((node) => node.remove());
+}
+
+function showSeminarGroupTooltip(anchor, text) {
+  hideSeminarGroupTooltip();
+
+  const tip = document.createElement("div");
+  tip.className = "subject-group-tooltip-floating";
+  tip.setAttribute("role", "tooltip");
+  tip.textContent = text;
+  document.body.append(tip);
+
+  const rect = anchor.getBoundingClientRect();
+  const tipRect = tip.getBoundingClientRect();
+  const margin = 8;
+  let left = rect.right - tipRect.width;
+  let top = rect.top - tipRect.height - 8;
+
+  left = Math.max(margin, Math.min(left, window.innerWidth - tipRect.width - margin));
+  if (top < margin) {
+    top = rect.bottom + 8;
+  }
+
+  tip.style.left = `${left}px`;
+  tip.style.top = `${top}px`;
+}
+
+function createSeminarGroupWarning(subject) {
+  const warning = document.createElement("button");
+  warning.type = "button";
+  warning.className = "subject-group-warning";
+  warning.setAttribute("aria-label", t("seminarGroupsWarningTooltip"));
+
+  const icon = document.createElement("span");
+  icon.className = "subject-group-warning-icon";
+  icon.setAttribute("aria-hidden", "true");
+  icon.textContent = "\u26A0\uFE0F";
+  warning.append(icon);
+
+  const tooltipText = t("seminarGroupsWarningTooltip");
+  warning.addEventListener("mouseenter", () => showSeminarGroupTooltip(warning, tooltipText));
+  warning.addEventListener("mouseleave", hideSeminarGroupTooltip);
+  warning.addEventListener("focus", () => showSeminarGroupTooltip(warning, tooltipText));
+  warning.addEventListener("blur", hideSeminarGroupTooltip);
+  warning.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    hideSeminarGroupTooltip();
+    const card = warning.closest("details.subject-card");
+    if (card) card.open = true;
+  });
+  return warning;
+}
+
+function createSeminarGroupSelector(subject) {
+  const groups = getSeminarGroupsForSubject(subject);
+  const section = document.createElement("div");
+  section.className = "subject-group-section";
+
+  const title = document.createElement("p");
+  title.className = "subject-group-title";
+  title.textContent = t("seminarGroupsWarningTitle");
+
+  const hint = document.createElement("p");
+  hint.className = "mini subject-group-hint";
+  hint.textContent = t("seminarGroupsWarningHint");
+
+  const list = document.createElement("div");
+  list.className = "subject-group-list";
+
+  const refreshAfterInteraction = () => {
+    acknowledgeSeminarGroupWarning(subject);
+    renderSubjects(detectedSubjects, true);
+    persistSessionState();
+  };
+
+  for (const group of groups) {
+    const selected = isSeminarGroupSelected(subject, group);
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = `subject-group-chip${selected ? " is-selected" : ""}`;
+    chip.setAttribute("aria-pressed", selected ? "true" : "false");
+    chip.textContent = group;
+    chip.title = t("seminarGroupLabel").replace("{group}", group);
+    chip.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (!seminarGroupChipInteracted.has(subject)) {
+        seminarGroupChipInteracted.add(subject);
+        selectedSeminarGroups[subject] = new Set([group]);
+      } else {
+        setSeminarGroupSelected(subject, group, !selected);
+      }
+      refreshAfterInteraction();
+    });
+    list.append(chip);
+  }
+
+  const actions = document.createElement("div");
+  actions.className = "subject-group-actions";
+
+  const selectAll = document.createElement("button");
+  selectAll.type = "button";
+  selectAll.className = "subject-group-action is-all";
+  selectAll.textContent = t("seminarGroupsSelectAll");
+  selectAll.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    selectedSeminarGroups[subject] = new Set(groups);
+    refreshAfterInteraction();
+  });
+
+  const selectNone = document.createElement("button");
+  selectNone.type = "button";
+  selectNone.className = "subject-group-action is-none";
+  selectNone.textContent = t("seminarGroupsSelectNone");
+  selectNone.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    selectedSeminarGroups[subject] = new Set();
+    refreshAfterInteraction();
+  });
+
+  actions.append(selectAll, selectNone);
+  section.append(title, hint, list, actions);
+  return section;
+}
+
+function createSubjectMainRow(subject, { expandButton = null, warningBadge = null } = {}) {
   const row = document.createElement("div");
   row.className = "subject-row";
 
@@ -811,6 +1705,10 @@ function createSubjectMainRow(subject, { expandButton = null } = {}) {
     row.append(createColorPickerTrigger(subject, "main"));
   }
 
+  if (warningBadge) {
+    row.append(warningBadge);
+  }
+
   if (expandButton) {
     row.append(expandButton);
   }
@@ -821,12 +1719,18 @@ function createSubjectMainRow(subject, { expandButton = null } = {}) {
 function createExpandableSubjectCard(subject, flags, open = false) {
   const card = document.createElement("details");
   card.className = "subject-card";
+  if (hasPendingSeminarGroupWarning(subject)) {
+    card.classList.add("has-pending-group-warning");
+  }
   card.open = open;
 
   const expandBtn = document.createElement("button");
   expandBtn.type = "button";
   expandBtn.className = "subject-expand-btn";
-  expandBtn.setAttribute("aria-label", t("googleExpandSubjectTypes"));
+  expandBtn.setAttribute(
+    "aria-label",
+    hasMultipleSeminarGroups(subject) ? t("googleExpandSubjectTypesWithGroups") : t("googleExpandSubjectTypes")
+  );
   expandBtn.setAttribute("aria-expanded", open ? "true" : "false");
 
   const expandIcon = document.createElement("span");
@@ -846,14 +1750,24 @@ function createExpandableSubjectCard(subject, flags, open = false) {
     expandBtn.setAttribute("aria-expanded", card.open ? "true" : "false");
   });
 
+  const warningBadge = hasPendingSeminarGroupWarning(subject)
+    ? createSeminarGroupWarning(subject)
+    : null;
+
   const summary = document.createElement("summary");
   summary.className = "subject-summary";
-  summary.append(createSubjectMainRow(subject, { expandButton: expandBtn }));
+  summary.append(createSubjectMainRow(subject, { expandButton: expandBtn, warningBadge }));
 
   const panel = document.createElement("div");
   panel.className = "subject-type-panel";
-  if (flags.seminar) panel.append(createSubjectTypeRow(subject, "seminar"));
-  if (flags.exam) panel.append(createSubjectTypeRow(subject, "exam"));
+
+  if (hasMultipleSeminarGroups(subject)) {
+    panel.append(createSeminarGroupSelector(subject));
+  }
+
+  const isGoogle = document.body.classList.contains("mode-google");
+  if (isGoogle && flags.seminar) panel.append(createSubjectTypeRow(subject, "seminar"));
+  if (isGoogle && flags.exam) panel.append(createSubjectTypeRow(subject, "exam"));
 
   card.append(summary, panel);
   return card;
@@ -862,11 +1776,90 @@ function createExpandableSubjectCard(subject, flags, open = false) {
 function updateGoogleSteps() {
   const connected = els.googleStatus?.classList.contains("connected");
   const hasDates = Boolean(els.startDate?.value && els.endDate?.value);
+  const hasSubjects = detectedSubjects.length > 0;
+  const calendarConfigured = getGoogleCalendarMode() === "single"
+    || [...selectedSubjects].length > 0;
 
   els.googleConnectStep?.classList.toggle("step-done", Boolean(connected));
-  els.googleCalendarStep?.classList.toggle("step-done", Boolean(connected));
   els.datesCard?.classList.toggle("step-done", hasDates);
-  els.subjectsCard?.classList.toggle("step-done", detectedSubjects.length > 0);
+  els.subjectsCard?.classList.toggle("step-done", hasSubjects);
+  els.googleCalendarsStep?.classList.toggle("step-done", Boolean(connected) && calendarConfigured);
+}
+
+function renderGoogleCalendarsStep() {
+  const mode = getGoogleCalendarMode();
+  els.googleCalendarModePicker?.querySelectorAll(".calendar-mode-card").forEach((button) => {
+    const active = button.dataset.mode === mode;
+    button.setAttribute("aria-pressed", active ? "true" : "false");
+  });
+
+  els.googleCalendarSinglePanel?.classList.toggle("hidden", mode !== "single");
+  els.googleCalendarPerSubjectPanel?.classList.toggle("hidden", mode !== "perSubject");
+
+  if (els.googleCalendarSingleColorSlot) {
+    els.googleCalendarSingleColorSlot.replaceChildren(
+      createColorPickerTrigger(GOOGLE_SINGLE_CALENDAR_KEY, "calendar")
+    );
+  }
+
+  const list = els.googleCalendarPerSubjectList;
+  if (!list) return;
+
+  list.textContent = "";
+  const subjects = [...selectedSubjects].sort((a, b) => a.localeCompare(b));
+  const hasSubjects = subjects.length > 0;
+  els.googleCalendarPerSubjectEmpty?.classList.toggle("hidden", hasSubjects || mode !== "perSubject");
+
+  if (!hasSubjects) {
+    updateGoogleSteps();
+    return;
+  }
+
+  for (const subject of subjects) {
+    const row = document.createElement("div");
+    row.className = "google-calendar-subject-row";
+
+    const label = document.createElement("span");
+    label.className = "google-calendar-subject-label";
+    label.textContent = subject;
+
+    const nameField = document.createElement("label");
+    nameField.className = "field google-calendar-subject-name";
+    const nameSpan = document.createElement("span");
+    nameSpan.textContent = t("calendarName");
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.maxLength = 100;
+    nameInput.autocomplete = "off";
+    nameInput.placeholder = subject;
+    nameInput.value = settings.googleSubjectCalendarNames?.[subject] ?? "";
+    nameInput.addEventListener("input", () => {
+      setSubjectCalendarName(subject, nameInput.value);
+      saveSettingsData();
+    });
+    nameField.append(nameSpan, nameInput);
+
+    const colorRow = document.createElement("div");
+    colorRow.className = "calendar-color-row";
+    const colorLabel = document.createElement("span");
+    colorLabel.className = "mini";
+    colorLabel.textContent = t("googleCalendarColorLabel");
+    const colorSlot = document.createElement("div");
+    colorSlot.className = "calendar-color-slot";
+    colorSlot.append(createColorPickerTrigger(subject, "calendar"));
+    colorRow.append(colorLabel, colorSlot);
+
+    row.append(label, nameField, colorRow);
+    list.append(row);
+  }
+
+  updateGoogleSteps();
+}
+
+function setGoogleCalendarMode(mode, persist = true) {
+  settings.googleCalendarMode = mode === "perSubject" ? "perSubject" : "single";
+  renderGoogleCalendarsStep();
+  if (persist) saveSettingsData();
 }
 
 function updateGoogleUI(email) {
@@ -1056,6 +2049,8 @@ async function syncGoogleCalendar() {
     validateForm();
     setStatus(t("reading"));
     const items = await readItemsFromUpf();
+    subjectSeminarGroups = buildSubjectSeminarGroups(items);
+    syncSelectedSeminarGroups([...selectedSubjects]);
     selectedSubjectsForExport(items);
 
     const calendarName = readGoogleCalendarNameFromForm();
@@ -1069,9 +2064,14 @@ async function syncGoogleCalendar() {
       includeHolidays: els.includeHolidays.checked,
       includeDescription: els.includeDescription.checked,
       selectedSubjects,
+      isItemAllowedBySeminarGroup,
       getSubjectColorId,
       getEventColorId,
       calendarName,
+      calendarMode: getGoogleCalendarMode(),
+      getCalendarNameForSubject: getSubjectCalendarName,
+      getCalendarColorHex,
+      getSingleCalendarColorHex: () => getCalendarColorHex(GOOGLE_SINGLE_CALENDAR_KEY),
     });
 
     if (!job.events.length && !job.prepareFailures?.length) {
@@ -1638,6 +2638,7 @@ function createIcs(items, options) {
     const subject = normalizeSubject(item);
     if (options.subjectFilter && subject !== options.subjectFilter) continue;
     if (options.selectedSubjects?.size && !options.selectedSubjects.has(subject)) continue;
+    if (!isItemAllowedBySeminarGroup(item)) continue;
 
     const startParts = parseUpfDateTimeParts(item.start);
     const endParts = parseUpfDateTimeParts(item.end);
@@ -1794,6 +2795,7 @@ function renderSubjects(subjects, preserveEmptySelection = false) {
   if (!subjects.length) {
     els.subjectsList.className = "subjects-empty";
     els.subjectsList.textContent = t("noSubjectsInRange");
+    renderGoogleCalendarsStep();
     return;
   }
 
@@ -1806,8 +2808,9 @@ function renderSubjects(subjects, preserveEmptySelection = false) {
     const flags = getSubjectTypeFlags(subject);
     const isGoogle = document.body.classList.contains("mode-google");
     const hasTypeOptions = isGoogle && (flags.seminar || flags.exam);
+    const hasMultiGroups = hasMultipleSeminarGroups(subject);
 
-    if (hasTypeOptions) {
+    if (hasTypeOptions || hasMultiGroups) {
       els.subjectsList.append(createExpandableSubjectCard(subject, flags, openCards.has(subject)));
       return;
     }
@@ -1818,7 +2821,7 @@ function renderSubjects(subjects, preserveEmptySelection = false) {
     els.subjectsList.append(wrapper);
   });
 
-  updateGoogleSteps();
+  renderGoogleCalendarsStep();
 }
 
 async function readItemsFromUpf() {
@@ -1841,6 +2844,7 @@ async function detectSubjects() {
     validateForm();
     const items = await readItemsFromUpf();
     subjectTypeFlags = buildSubjectTypeFlags(items);
+    subjectSeminarGroups = buildSubjectSeminarGroups(items);
 
     const subjects = [...new Set(
       items
@@ -1850,6 +2854,9 @@ async function detectSubjects() {
     )].sort((a, b) => a.localeCompare(b));
 
     selectedSubjects = new Set(subjects);
+    acknowledgedSeminarGroupWarnings = new Set();
+    seminarGroupChipInteracted = new Set();
+    syncSelectedSeminarGroups(subjects, { reset: true });
     assignDefaultSubjectColors(subjects);
     assignDefaultTypeColors(subjects);
     renderSubjects(subjects);
@@ -1896,6 +2903,8 @@ async function exportCalendar() {
 
     setStatus(t("reading"));
     const items = await readItemsFromUpf();
+    subjectSeminarGroups = buildSubjectSeminarGroups(items);
+    syncSelectedSeminarGroups([...selectedSubjects]);
     const subjects = selectedSubjectsForExport(items);
 
     if (els.splitBySubject.checked) {
@@ -2264,6 +3273,7 @@ function applyI18n() {
   });
 
   renderAllBlockBuilders();
+  renderSavedColorsBar();
   updateFormatPreview();
   updateThemeToggle();
   updateVersionLabel();
@@ -2335,11 +3345,20 @@ async function loadSettings() {
     ...structuredClone(DEFAULT_SETTINGS),
     ...storedSettings,
     themeMode,
+    language: SUPPORTED_LANGUAGES.includes(storedSettings.language)
+      ? storedSettings.language
+      : DEFAULT_SETTINGS.language,
     formats: normalizeFormats(storedSettings.formats),
     formatBlockSettings: normalizeFormatBlockSettings(storedSettings.formatBlockSettings),
     subjectColors: storedSettings.subjectColors || {},
     subjectTypeColors: storedSettings.subjectTypeColors || {},
     googleCalendarName: storedSettings.googleCalendarName ?? DEFAULT_SETTINGS.googleCalendarName,
+    googleCalendarMode: storedSettings.googleCalendarMode === "perSubject" ? "perSubject" : "single",
+    googleCalendarColors: storedSettings.googleCalendarColors || {},
+    googleSubjectCalendarNames: storedSettings.googleSubjectCalendarNames || {},
+    savedColors: Array.isArray(storedSettings.savedColors)
+      ? storedSettings.savedColors.map((hex) => normalizePickerHex(hex)).filter(Boolean)
+      : [],
     preferredMode: storedSettings.preferredMode === "manual" ? "manual" : "google",
   };
 
@@ -2427,8 +3446,14 @@ els.syncStopBtn?.addEventListener("click", requestSyncAbort);
 els.modeManualBtn?.addEventListener("click", () => setMode("manual"));
 els.modeGoogleBtn?.addEventListener("click", () => setMode("google"));
 
+window.addEventListener("resize", repositionOpenColorPalette);
+
 document.addEventListener("click", (event) => {
-  if (!ignoreColorPaletteOutsideClick && !els.colorPalettePopover?.classList.contains("hidden")) {
+  if (
+    !ignoreColorPaletteOutsideClick &&
+    !eyedropperActive &&
+    !els.colorPalettePopover?.classList.contains("hidden")
+  ) {
     if (!event.target.closest(".color-picker-trigger") && !event.target.closest("#colorPalettePopover")) {
       closeColorPalette();
     }
@@ -2498,6 +3523,11 @@ els.googleCalendarName?.addEventListener("input", () => {
   readGoogleCalendarNameFromForm();
   saveSettingsData();
 });
+els.googleCalendarModePicker?.addEventListener("click", (event) => {
+  const button = event.target.closest(".calendar-mode-card[data-mode]");
+  if (!button || !els.googleCalendarModePicker.contains(button)) return;
+  setGoogleCalendarMode(button.dataset.mode);
+});
 
 (async function init() {
   document.body.classList.add("mode-manual");
@@ -2511,6 +3541,7 @@ els.googleCalendarName?.addEventListener("input", () => {
     updateGoogleCalendarNameField();
   }
   setMode(settings.preferredMode || "google", false);
+  renderGoogleCalendarsStep();
   updateVersionLabel();
   applyI18n();
   await restoreSessionState();

@@ -1,4 +1,4 @@
-# Exportador d'horari i calendari UPF, versión 1.1.2
+# Exportador d'horari i calendari UPF, versión 1.1.4
 
 Extensión para Chrome y Edge que exporta el horario de clases de la UPF desde Secretaría Virtual o gestioacadémica a archivos `.ics` compatibles con Google Calendar, Apple Calendar, Outlook y otros calendarios, o lo sincroniza directamente con Google Calendar.
 
@@ -26,7 +26,28 @@ La mejor solución es:
 3. En la extensión, activar `Crear un .ics por cada materia seleccionada`.
 4. Importar cada `.ics` al calendario correspondiente.
 
-En el **modo automático**, los colores se pueden elegir directamente por asignatura (y, si se desea, por seminario o examen).
+En el **modo automático**, puedes crear un solo calendario o **un calendario por materia**, con nombre y **color lateral** del calendario en Google. En el paso 3 eliges los colores de cada clase (y, si quieres, seminarios o exámenes con color propio).
+
+## Cambios en la versión 1.1.4
+
+- En el modo automático, el nombre del calendario pasa al paso 4 (después de detectar materias).
+- Opción de **un solo calendario** (por defecto) o **un calendario por materia**.
+- Con un calendario por materia se puede editar el nombre y el color lateral de cada calendario.
+- Selector de color renovado: paleta de Google, barra de colores guardados, selector personalizado (tono y saturación), pipeta, campo HEX y previsualización.
+- El selector se abre centrado con fondo oscuro; correcciones en negro, blanco y colores sin saturación.
+- Paso 4 renombrado a **Nom i color lateral del calendari**, con texto que explica que el color es el de la **barra lateral** de Google Calendar.
+- Enlace «Algun dubte? / Veure el tutorial» al vídeo de ayuda: https://youtu.be/G4TCTAwJ4EY
+
+## Cambios en la versión 1.1.3
+
+- Si una asignatura tiene varios grupos de seminarios (p. ej. 301, 302, 303), aparece un aviso ⚠️ junto al desplegable.
+- Dentro del desplegable se pueden elegir qué grupos exportar o sincronizar (Tots / Cap / chips por grupo).
+- Al pasar el ratón por el aviso se explica que se han detectado varios grupos; al hacer clic se descarta el aviso.
+- Al volver a pulsar «Detectar matèries», la selección de grupos se reinicia a todos (evita quedarse solo con un grupo anterior).
+- El color opcional de seminarios/exámenes se aclara: siempre se incluyen; «Color propi» solo cambia el color.
+- Tras sincronizar o exportar, los números y detalles quedan en un desplegable «Detalles técnicos» (cerrado por defecto).
+- Si se borra el calendario en Google Calendar, la extensión detecta que ya no existe, crea uno nuevo y no falla con errores 410 de eventos borrados.
+- La lista de materias crece con el contenido (sin barra de scroll interna fija).
 
 ## Cambios en la versión 1.1.2
 

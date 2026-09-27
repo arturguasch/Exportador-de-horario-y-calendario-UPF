@@ -305,6 +305,9 @@
   "splitBySubject": {
     "message": "Crear un .ics por cada materia seleccionada"
   },
+  "splitBySubjectHint": {
+    "message": "Recomendado si quieres asignar un color distinto a cada materia al importar los archivos al calendario."
+  },
   "startDate": {
     "message": "Fecha inicial"
   },
@@ -388,6 +391,9 @@
   },
   "exportDoneSuccess": {
     "message": "Exportación completada exitosamente"
+  },
+  "statusTechnicalDetails": {
+    "message": "Detalles técnicos"
   },
   "supportThanks": {
     "message": "Esta extensión es gratuita. Si te ha ayudado y quieres apoyar el mantenimiento:"
@@ -501,7 +507,7 @@
     "message": "Necesario para sincronizar eventos con tu cuenta de Google."
   },
   "googleStepCalendarName": {
-    "message": "2. Nombre del calendario"
+    "message": "Nombre del calendario"
   },
   "googleCalendarNameHint": {
     "message": "Si lo dejas vacío, se usará el nombre predeterminado."
@@ -510,16 +516,70 @@
     "message": "Horario UPF"
   },
   "googleStepDates": {
-    "message": "3. Fecha inicial y final"
+    "message": "2. Fecha inicial y final"
   },
   "googleStepSubjects": {
-    "message": "4. Detecta las materias y elige colores"
+    "message": "3. Detecta las materias y elige colores"
+  },
+  "googleStepCalendars": {
+    "message": "4. Nombre y color lateral del calendario"
+  },
+  "googleCalendarsHint": {
+    "message": "Por defecto se crea un solo calendario. Puedes crear uno por cada materia y elegir su nombre y color. El color del calendario es el que se ve en la <strong>barra lateral</strong> de Google Calendar."
+  },
+  "ariaGoogleCalendarMode": {
+    "message": "Tipo de calendario en Google"
+  },
+  "googleCalendarModeSingle": {
+    "message": "Un solo calendario"
+  },
+  "googleCalendarModePerSubject": {
+    "message": "Un calendario por materia"
+  },
+  "googleCalendarColorLabel": {
+    "message": "Color lateral del calendario"
+  },
+  "googleCalendarsNeedSubjects": {
+    "message": "Detecta y selecciona materias para configurar cada calendario."
+  },
+  "tutorialDoubt": {
+    "message": "¿Alguna duda?"
+  },
+  "tutorialWatch": {
+    "message": "Ver el tutorial"
   },
   "googlePickColor": {
     "message": "Elegir color"
   },
+  "colorPalettePresets": {
+    "message": "Paleta"
+  },
+  "colorPaletteSaved": {
+    "message": "Tus colores"
+  },
+  "colorPaletteCustom": {
+    "message": "Color personalizado"
+  },
+  "colorPaletteSaveAria": {
+    "message": "Añadir color actual a tus colores"
+  },
+  "colorPaletteEyedropper": {
+    "message": "Capturar color de la pantalla"
+  },
+  "colorPaletteRemoveSaved": {
+    "message": "Eliminar color guardado"
+  },
   "googleAltColorToggle": {
-    "message": "Color distinto"
+    "message": "Color propio"
+  },
+  "googleAltColorInherited": {
+    "message": "Mismo color que la asignatura"
+  },
+  "googleAltColorSeminarHint": {
+    "message": "Los seminarios siempre se incluyen. Activa «Color propio» solo si quieres pintarlos de otro color."
+  },
+  "googleAltColorExamHint": {
+    "message": "Los exámenes siempre se incluyen. Activa «Color propio» solo si quieres pintarlos de otro color."
   },
   "googleColorSeminar": {
     "message": "Seminarios"
@@ -529,6 +589,30 @@
   },
   "googleExpandSubjectTypes": {
     "message": "Mostrar opciones de seminarios y exámenes"
+  },
+  "googleExpandSubjectTypesWithGroups": {
+    "message": "Mostrar opciones y grupos de seminarios"
+  },
+  "seminarGroupsWarningTooltip": {
+    "message": "Se detectan varios grupos de seminarios para esta asignatura"
+  },
+  "seminarGroupsWarningTitle": {
+    "message": "Varios grupos de seminarios detectados"
+  },
+  "seminarGroupsWarningHint": {
+    "message": "El horario puede mostrar todos los grupos (p. ej. 301, 302, 303). Elige solo los que quieres exportar o sincronizar."
+  },
+  "seminarGroupLabel": {
+    "message": "Grupo {group}"
+  },
+  "seminarGroupsSelectAll": {
+    "message": "Todos los grupos"
+  },
+  "seminarGroupsSelectNone": {
+    "message": "Ningún grupo"
+  },
+  "seminarGroupsDetectedStatus": {
+    "message": "{n} asignatura(s) con varios grupos de seminarios: revisa el aviso ⚠️"
   },
   "googleStepOptions": {
     "message": "5. Opciones y formato de los eventos"

@@ -32,6 +32,11 @@
       </button>
     </nav>
 
+    <p class="tutorial-hint">
+      <span data-i18n="tutorialDoubt">Algun dubte?</span>
+      <a href="https://youtu.be/G4TCTAwJ4EY" target="_blank" rel="noopener noreferrer" data-i18n="tutorialWatch">Veure el tutorial</a>
+    </p>
+
     <section class="card google-only google-step-card" id="googleConnectStep">
       <p class="step-badge" data-i18n="googleStepConnect">1. Connecta el compte Google</p>
       <p class="mini" data-i18n="googleStepConnectHint">Necessari per sincronitzar esdeveniments amb el teu compte de Google.</p>
@@ -41,15 +46,6 @@
         <button id="connectGoogleBtn" class="secondary" data-i18n="connectGoogle">Connectar amb Google</button>
         <button id="disconnectGoogleBtn" class="ghost small hidden" data-i18n="disconnectGoogle">Desconnectar</button>
       </div>
-    </section>
-
-    <section class="card google-only google-step-card" id="googleCalendarStep">
-      <p class="step-badge" data-i18n="googleStepCalendarName">2. Nom del calendari</p>
-      <p class="mini" data-i18n="googleCalendarNameHint">Si el deixes buit, s'usarà «Horari UPF».</p>
-      <label class="field">
-        <span data-i18n="calendarName">Nom del calendari</span>
-        <input id="googleCalendarName" type="text" value="" maxlength="100" autocomplete="off" placeholder="Horari UPF">
-      </label>
     </section>
 
     <section class="card manual-only manual-step-card" id="manualHelpStep">
@@ -80,7 +76,7 @@
 
     <section class="card google-step-card manual-step-card" id="datesCard">
       <p class="step-badge manual-only" data-i18n="manualStepDates">2. Data inicial i final</p>
-      <p class="step-badge google-only" data-i18n="googleStepDates">3. Data inicial i final</p>
+      <p class="step-badge google-only" data-i18n="googleStepDates">2. Data inicial i final</p>
       <label class="field">
         <span data-i18n="startDate">Data inicial</span>
         <input id="startDate" type="date">
@@ -97,7 +93,7 @@
 
     <section class="card google-step-card manual-step-card" id="subjectsCard">
       <p class="step-badge manual-only" data-i18n="manualStepSubjects">3. Detecta les matèries</p>
-      <p class="step-badge google-only" data-i18n="googleStepSubjects">4. Detecta les matèries i tria colors</p>
+      <p class="step-badge google-only" data-i18n="googleStepSubjects">3. Detecta les matèries i tria colors</p>
       <div class="subjects-head">
         <div>
           <p class="mini" data-i18n="subjectsSubtitle">Prem "Detectar matèries" per triar què vols exportar.</p>
@@ -112,6 +108,36 @@
 
       <div id="subjectsList" class="subjects-empty" data-i18n="subjectsEmpty">
         Encara no hi ha matèries detectades.
+      </div>
+    </section>
+
+    <section class="card google-only google-step-card" id="googleCalendarsStep">
+      <p class="step-badge" data-i18n="googleStepCalendars">4. Nom i color lateral del calendari</p>
+      <p class="mini" data-i18n-html="googleCalendarsHint">Per defecte es crea un sol calendari. Pots crear-ne un per cada matèria i triar-ne el nom i el color. El color del calendari és el que es veu a la <strong>barra lateral</strong> de Google Calendar.</p>
+
+      <div class="calendar-mode-picker" id="googleCalendarModePicker" role="radiogroup" data-i18n-aria="ariaGoogleCalendarMode">
+        <button type="button" class="calendar-mode-card" data-mode="single" aria-pressed="true">
+          <span class="calendar-mode-card-title" data-i18n="googleCalendarModeSingle">Un sol calendari</span>
+        </button>
+        <button type="button" class="calendar-mode-card" data-mode="perSubject" aria-pressed="false">
+          <span class="calendar-mode-card-title" data-i18n="googleCalendarModePerSubject">Un calendari per matèria</span>
+        </button>
+      </div>
+
+      <div id="googleCalendarSinglePanel" class="google-calendar-panel">
+        <label class="field">
+          <span data-i18n="calendarName">Nom del calendari</span>
+          <input id="googleCalendarName" type="text" value="" maxlength="100" autocomplete="off" placeholder="Horari UPF">
+        </label>
+        <div class="calendar-color-row">
+          <span class="mini" data-i18n="googleCalendarColorLabel">Color lateral del calendari</span>
+          <div id="googleCalendarSingleColorSlot" class="calendar-color-slot"></div>
+        </div>
+      </div>
+
+      <div id="googleCalendarPerSubjectPanel" class="google-calendar-panel hidden">
+        <p class="mini" id="googleCalendarPerSubjectEmpty" data-i18n="googleCalendarsNeedSubjects">Detecta i selecciona matèries per configurar cada calendari.</p>
+        <div id="googleCalendarPerSubjectList" class="google-calendar-subject-list"></div>
       </div>
     </section>
 
@@ -164,10 +190,13 @@
         <span data-i18n="includeDescription">Incloure descripció extensiva</span>
       </label>
 
-      <label class="option-check manual-only">
-        <input id="splitBySubject" type="checkbox">
-        <span data-i18n="splitBySubject">Crear un .ics per cada matèria seleccionada</span>
-      </label>
+      <div class="option-check option-check-stacked manual-only">
+        <label class="option-check-main">
+          <input id="splitBySubject" type="checkbox">
+          <span data-i18n="splitBySubject">Crear un .ics per cada matèria seleccionada</span>
+        </label>
+        <p class="option-check-hint" data-i18n="splitBySubjectHint">Recomanat si vols assignar un color diferent a cada matèria quan importis els fitxers al calendari.</p>
+      </div>
       </div>
     </section>
 
@@ -298,8 +327,37 @@
     </div>
   </section>
 
-  <div id="colorPalettePopover" class="color-palette-popover hidden" role="dialog" aria-hidden="true">
+  <div id="colorPaletteBackdrop" class="color-palette-backdrop hidden" aria-hidden="true"></div>
+
+  <div id="colorPalettePopover" class="color-palette-popover hidden" role="dialog" aria-hidden="true" aria-labelledby="colorPaletteTitle">
+    <p id="colorPaletteTitle" class="color-palette-title" data-i18n="googlePickColor">Triar color</p>
+
+    <p class="color-palette-section-label" data-i18n="colorPalettePresets">Paleta</p>
     <div id="colorPaletteGrid" class="color-palette-grid"></div>
+
+    <div class="color-palette-saved">
+      <p class="color-palette-section-label" data-i18n="colorPaletteSaved">Els teus colors</p>
+      <div id="colorPaletteSavedGrid" class="color-palette-saved-grid"></div>
+    </div>
+
+    <div id="colorPaletteCustomWrap" class="color-palette-custom">
+      <p class="color-palette-section-label" data-i18n="colorPaletteCustom">Color personalitzat</p>
+      <div class="color-palette-picker">
+        <div id="colorPaletteSV" class="color-palette-sv" role="slider" aria-valuemin="0" aria-valuemax="100" tabindex="0">
+          <div id="colorPaletteSVThumb" class="color-palette-sv-thumb"></div>
+        </div>
+        <div id="colorPaletteHue" class="color-palette-hue" role="slider" aria-valuemin="0" aria-valuemax="360" tabindex="0">
+          <div id="colorPaletteHueThumb" class="color-palette-hue-thumb"></div>
+        </div>
+        <div class="color-palette-tools">
+          <button type="button" id="colorPaletteEyedropperBtn" class="color-palette-tool-btn is-ghost" data-i18n-aria="colorPaletteEyedropper">
+            <img src="icons/eyedropper.png" alt="" class="color-palette-tool-icon" width="28" height="28">
+          </button>
+          <span id="colorPalettePreview" class="color-palette-preview" aria-hidden="true"></span>
+          <input type="text" id="colorPaletteHexInput" class="color-palette-hex-input" maxlength="7" spellcheck="false" autocomplete="off" inputmode="text" placeholder="#4285F4">
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="oauth-config.js"></script>
