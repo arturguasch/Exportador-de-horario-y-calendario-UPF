@@ -1,4 +1,4 @@
-# Exportador d'horari i calendari UPF, versión 1.1.4
+# Exportador d'horari i calendari UPF, versión 1.1.5
 
 Extensión para Chrome y Edge que exporta el horario de clases de la UPF desde Secretaría Virtual o gestioacadémica a archivos `.ics` compatibles con Google Calendar, Apple Calendar, Outlook y otros calendarios, o lo sincroniza directamente con Google Calendar.
 
@@ -28,6 +28,15 @@ La mejor solución es:
 
 En el **modo automático**, puedes crear un solo calendario o **un calendario por materia**, con nombre y **color lateral** del calendario en Google. En el paso 3 eliges los colores de cada clase (y, si quieres, seminarios o exámenes con color propio).
 
+## Cambios en la versión 1.1.5 (hotfix)
+
+- Les matèries detectades només es mostren si obres l’extensió estant a l’horari de la Secretaria Virtual o gestió acadèmica; en qualsevol altra pàgina cal tornar a l’horari i prémer «Detectar matèries».
+- En tornar a detectar, es conserven colors, noms de calendari i altres preferències ja configurades per a matèries que coincideixin.
+- En reiniciar l’extensió des de Configuració, s’esborra també l’estat de sessió (abans les matèries podien reaparèixer sense haver detectat).
+- Hotfix: sincronització amb Google Calendar — els colors d’esdeveniment reutilitzen les etiquetes que Google ja té al calendari (abans molts esdeveniments fallaven amb «Invalid event label id»).
+- Hotfix: si un color encara no es pot aplicar, l’esdeveniment es sincronitza sense color en lloc de fallar.
+- Enllaç del tutorial actualitzat: https://youtu.be/tbHzqdp6fEU
+
 ## Cambios en la versión 1.1.4
 
 - En el modo automático, el nombre del calendario pasa al paso 4 (después de detectar materias).
@@ -36,7 +45,7 @@ En el **modo automático**, puedes crear un solo calendario o **un calendario po
 - Selector de color renovado: paleta de Google, barra de colores guardados, selector personalizado (tono y saturación), pipeta, campo HEX y previsualización.
 - El selector se abre centrado con fondo oscuro; correcciones en negro, blanco y colores sin saturación.
 - Paso 4 renombrado a **Nom i color lateral del calendari**, con texto que explica que el color es el de la **barra lateral** de Google Calendar.
-- Enlace «Algun dubte? / Veure el tutorial» al vídeo de ayuda: https://youtu.be/G4TCTAwJ4EY
+- Enlace «Algun dubte? / Veure el tutorial» al vídeo de ayuda: https://youtu.be/tbHzqdp6fEU
 
 ## Cambios en la versión 1.1.3
 

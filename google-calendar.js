@@ -41,7 +41,10 @@ const GOOGLE_COLOR_PRESETS = [
 ];
 
 function normalizeColorHex(hex) {
-  return String(hex || "").trim().toLowerCase();
+  let value = String(hex || "").trim().toLowerCase();
+  if (!value) return "";
+  if (!value.startsWith("#")) value = `#${value}`;
+  return value;
 }
 
 const CUSTOM_COLOR_PREFIX = "custom:";
@@ -90,8 +93,36 @@ function collectUsedLabelColors(events) {
   return colors;
 }
 
+function applyLabelIdRemap(events, idRemap) {
+  if (!(idRemap instanceof Map) || !idRemap.size) return;
+
+  for (const entry of events) {
+    const body = entry?.body;
+    if (!body?.eventLabelId) continue;
+
+    const mapped = idRemap.get(body.eventLabelId);
+    if (mapped) {
+      body.eventLabelId = mapped;
+    } else {
+      delete body.eventLabelId;
+    }
+  }
+}
+
+function stripEventLabelIds(events) {
+  for (const entry of events) {
+    if (entry?.body?.eventLabelId) delete entry.body.eventLabelId;
+  }
+}
+
+function isInvalidEventLabelError(error) {
+  const message = String(error?.message || error || "").toLowerCase();
+  return message.includes("invalid event label id");
+}
+
 async function ensureCalendarLabels(token, calendarId, neededLabelColors) {
-  if (!(neededLabelColors instanceof Map) || !neededLabelColors.size) return;
+  const idRemap = new Map();
+  if (!(neededLabelColors instanceof Map) || !neededLabelColors.size) return idRemap;
 
   const calendarPath = `/calendars/${encodeURIComponent(calendarId)}?${EVENT_LABEL_VERSION}`;
   let existing = [];
@@ -101,42 +132,66 @@ async function ensureCalendarLabels(token, calendarId, neededLabelColors) {
     existing = calendar?.labelProperties?.eventLabels || [];
   } catch (error) {
     console.warn("UPF labels read failed", error);
-    return;
+    return idRemap;
   }
 
-  const existingIds = new Set(existing.map((label) => label.id));
-  const existingHexes = new Set(
-    existing.map((label) => normalizeColorHex(label.backgroundColor)).filter(Boolean)
-  );
+  const hexToId = new Map();
+  const existingIds = new Set();
+
+  for (const label of existing) {
+    if (!label?.id) continue;
+    existingIds.add(label.id);
+    const hex = normalizeColorHex(label.backgroundColor);
+    if (hex) hexToId.set(hex, label.id);
+  }
+
   const merged = [...existing];
   let changed = false;
 
-  for (const [id, hexValue] of neededLabelColors) {
-    if (existingIds.has(id)) continue;
-
+  for (const [desiredId, hexValue] of neededLabelColors) {
     const hex = normalizeColorHex(hexValue);
     if (!/^#[0-9a-f]{6}$/.test(hex)) continue;
-    if (existingHexes.has(hex)) continue;
+
+    const existingIdForHex = hexToId.get(hex);
+    if (existingIdForHex) {
+      idRemap.set(desiredId, existingIdForHex);
+      continue;
+    }
+
+    if (existingIds.has(desiredId)) {
+      idRemap.set(desiredId, desiredId);
+      continue;
+    }
 
     merged.push({
-      id,
+      id: desiredId,
       backgroundColor: hex,
     });
-    existingIds.add(id);
-    existingHexes.add(hex);
+    hexToId.set(hex, desiredId);
+    existingIds.add(desiredId);
+    idRemap.set(desiredId, desiredId);
     changed = true;
   }
 
-  if (!changed) return;
+  if (!changed) return idRemap;
 
-  await calendarRequest(token, calendarPath, {
-    method: "PATCH",
-    body: JSON.stringify({
-      labelProperties: {
-        eventLabels: merged,
-      },
-    }),
-  });
+  try {
+    await calendarRequest(token, calendarPath, {
+      method: "PATCH",
+      body: JSON.stringify({
+        labelProperties: {
+          eventLabels: merged,
+        },
+      }),
+    });
+  } catch (error) {
+    console.warn("UPF labels patch failed", error);
+    for (const [desiredId, actualId] of [...idRemap.entries()]) {
+      if (actualId === desiredId) idRemap.delete(desiredId);
+    }
+  }
+
+  return idRemap;
 }
 
 function isLabelColorId(value) {
@@ -741,6 +796,47 @@ function prepareSyncJob(items, helpers) {
   };
 }
 
+async function writeCalendarEventEntry(token, { eventsPath, eventsBase, existing, calendarId, body }) {
+  const payload = { ...body };
+
+  const performWrite = async (eventBody) => {
+    if (existing?.eventId && existing.calendarId === calendarId) {
+      try {
+        await calendarRequest(
+          token,
+          `${eventsPath}/${encodeURIComponent(existing.eventId)}?${EVENT_LABEL_VERSION}`,
+          { method: "PATCH", body: JSON.stringify(eventBody) }
+        );
+        return { mode: "updated", eventId: existing.eventId };
+      } catch (error) {
+        if (!isGoneError(error)) throw error;
+        const createdEvent = await calendarRequest(
+          token,
+          eventsBase,
+          { method: "POST", body: JSON.stringify(eventBody) }
+        );
+        return { mode: "created", eventId: createdEvent.id };
+      }
+    }
+
+    const createdEvent = await calendarRequest(
+      token,
+      eventsBase,
+      { method: "POST", body: JSON.stringify(eventBody) }
+    );
+    return { mode: "created", eventId: createdEvent.id };
+  };
+
+  try {
+    return await performWrite(payload);
+  } catch (error) {
+    if (!isInvalidEventLabelError(error) || !payload.eventLabelId) throw error;
+    const fallback = { ...payload };
+    delete fallback.eventLabelId;
+    return performWrite(fallback);
+  }
+}
+
 async function runPreparedSync(job, onProgress = () => {}, options = {}) {
   const progressCb = typeof onProgress === "function" ? onProgress : () => {};
   const interactive = options.interactive !== false;
@@ -810,9 +906,11 @@ async function runPreparedSync(job, onProgress = () => {}, options = {}) {
     if (job.calendarMode !== "perSubject") {
       try {
         const neededLabelColors = collectUsedLabelColors(target.events || []);
-        await ensureCalendarLabels(token, calendar.id, neededLabelColors);
+        const labelIdRemap = await ensureCalendarLabels(token, calendar.id, neededLabelColors);
+        applyLabelIdRemap(target.events || [], labelIdRemap);
       } catch (error) {
-        console.warn("UPF labels setup failed, falling back to legacy colors", error);
+        console.warn("UPF labels setup failed, syncing without event colors", error);
+        stripEventLabelIds(target.events || []);
       }
     }
 
@@ -933,48 +1031,21 @@ async function runPreparedSync(job, onProgress = () => {}, options = {}) {
 
       try {
         const existing = uidMap[uid];
-        const sameCalendar = existing?.calendarId === calendarId;
+        const result = await writeCalendarEventEntry(token, {
+          eventsPath,
+          eventsBase,
+          existing,
+          calendarId,
+          body,
+        });
 
-        if (existing?.eventId && sameCalendar) {
-          try {
-            await calendarRequest(
-              token,
-              `${eventsPath}/${encodeURIComponent(existing.eventId)}?${EVENT_LABEL_VERSION}`,
-              { method: "PATCH", body: JSON.stringify(body) }
-            );
-            uidMap[uid] = {
-              eventId: existing.eventId,
-              calendarId,
-              syncedAt: Date.now(),
-            };
-            updated += 1;
-          } catch (error) {
-            if (!isGoneError(error)) throw error;
-            const createdEvent = await calendarRequest(
-              token,
-              eventsBase,
-              { method: "POST", body: JSON.stringify(body) }
-            );
-            uidMap[uid] = {
-              eventId: createdEvent.id,
-              calendarId,
-              syncedAt: Date.now(),
-            };
-            created += 1;
-          }
-        } else {
-          const createdEvent = await calendarRequest(
-            token,
-            eventsBase,
-            { method: "POST", body: JSON.stringify(body) }
-          );
-          uidMap[uid] = {
-            eventId: createdEvent.id,
-            calendarId,
-            syncedAt: Date.now(),
-          };
-          created += 1;
-        }
+        uidMap[uid] = {
+          eventId: result.eventId,
+          calendarId,
+          syncedAt: Date.now(),
+        };
+        if (result.mode === "updated") updated += 1;
+        else created += 1;
       } catch (error) {
         failed += 1;
         if (!firstError) firstError = error;

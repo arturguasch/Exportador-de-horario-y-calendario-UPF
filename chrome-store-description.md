@@ -1,4 +1,4 @@
-# Descripcions Chrome Web Store — v1.1.4
+# Descripcions Chrome Web Store — v1.1.5 (hotfix)
 
 Copia cada bloc a l’idioma corresponent del formulari de la Chrome Web Store.
 
@@ -40,7 +40,7 @@ L’extensió funciona al navegador. No recopila ni ven dades personals. La sinc
 6. Al pas 4, tria nom i color lateral del calendari (un sol calendari o un per matèria).
 7. Prem Sincronitzar i mantén el popup obert fins que acabi.
 
-Tutorial: https://youtu.be/G4TCTAwJ4EY
+Tutorial: https://youtu.be/tbHzqdp6fEU
 
 ### Com fer-ho servir (mode manual / .ics)
 
@@ -93,7 +93,7 @@ La extensión funciona en el navegador. No recopila ni vende datos personales. L
 6. En el paso 4, elige nombre y color lateral del calendario (uno solo o uno por materia).
 7. Pulsa Sincronizar y mantén el popup abierto hasta que termine.
 
-Tutorial: https://youtu.be/G4TCTAwJ4EY
+Tutorial: https://youtu.be/tbHzqdp6fEU
 
 ### Cómo usarla (modo manual / .ics)
 
@@ -146,7 +146,7 @@ The extension runs in your browser. It does not collect or sell personal data. G
 6. In step 4, choose calendar name and sidebar colour (single calendar or one per subject).
 7. Tap Sync and keep the popup open until it finishes.
 
-Tutorial: https://youtu.be/G4TCTAwJ4EY
+Tutorial: https://youtu.be/tbHzqdp6fEU
 
 ### How to use it (manual / .ics)
 

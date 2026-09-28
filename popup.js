@@ -452,16 +452,32 @@ function appendStatusDetails(lines, { open = false } = {}) {
   els.status.append(wrap);
 }
 
+async function isCurrentTabOnSchedule() {
+  const tab = await getActiveTab();
+  return isSupportedUpfUrl(tab?.url);
+}
+
 async function persistSessionState() {
   if (!chrome.storage.session) return;
 
-  const seminarGroupsSelected = {};
-  for (const [subject, groups] of Object.entries(selectedSeminarGroups)) {
-    seminarGroupsSelected[subject] = [...groups];
-  }
+  const data = await chrome.storage.session.get(SESSION_KEY);
+  const existing = data[SESSION_KEY] || {};
 
-  await chrome.storage.session.set({
-    [SESSION_KEY]: {
+  const payload = {
+    ...existing,
+    startDate: els.startDate.value,
+    endDate: els.endDate.value,
+    includeHolidays: els.includeHolidays.checked,
+    includeDescription: els.includeDescription.checked,
+  };
+
+  if (detectedSubjects.length) {
+    const seminarGroupsSelected = {};
+    for (const [subject, groups] of Object.entries(selectedSeminarGroups)) {
+      seminarGroupsSelected[subject] = [...groups];
+    }
+
+    Object.assign(payload, {
       detectedSubjects,
       selectedSubjects: [...selectedSubjects],
       subjectTypeFlags,
@@ -469,12 +485,10 @@ async function persistSessionState() {
       selectedSeminarGroups: seminarGroupsSelected,
       acknowledgedSeminarGroupWarnings: [...acknowledgedSeminarGroupWarnings],
       seminarGroupChipInteracted: [...seminarGroupChipInteracted],
-      startDate: els.startDate.value,
-      endDate: els.endDate.value,
-      includeHolidays: els.includeHolidays.checked,
-      includeDescription: els.includeDescription.checked,
-    },
-  });
+    });
+  }
+
+  await chrome.storage.session.set({ [SESSION_KEY]: payload });
 }
 
 async function restoreSessionState() {
@@ -488,6 +502,8 @@ async function restoreSessionState() {
   if (state.endDate) els.endDate.value = state.endDate;
   if (state.includeHolidays !== undefined) els.includeHolidays.checked = state.includeHolidays;
   if (state.includeDescription !== undefined) els.includeDescription.checked = state.includeDescription;
+
+  if (!(await isCurrentTabOnSchedule())) return;
 
   if (state.subjectSeminarGroups && typeof state.subjectSeminarGroups === "object") {
     subjectSeminarGroups = state.subjectSeminarGroups;
@@ -2696,11 +2712,15 @@ async function getActiveTab() {
 }
 
 async function checkCurrentPage() {
-  const tab = await getActiveTab();
+  const onSchedule = await isCurrentTabOnSchedule();
 
-  if (!isSupportedUpfUrl(tab?.url)) {
+  if (!onSchedule) {
     els.pageNotice.innerHTML = t("pageNotUpf");
     els.pageNotice.className = "notice error";
+    if (detectedSubjects.length) {
+      clearInMemorySessionState();
+      renderEmptySubjectsState();
+    }
     return false;
   }
 
@@ -3211,10 +3231,23 @@ function renderAllBlockBuilders() {
   updateFormatPreview();
 }
 
-function renderEmptySubjectsState() {
+function clearInMemorySessionState() {
   detectedSubjects = [];
   selectedSubjects = new Set();
   subjectTypeFlags = {};
+  subjectSeminarGroups = {};
+  selectedSeminarGroups = {};
+  acknowledgedSeminarGroupWarnings = new Set();
+  seminarGroupChipInteracted = new Set();
+}
+
+async function clearPersistedSessionState() {
+  if (!chrome.storage.session) return;
+  await chrome.storage.session.remove(SESSION_KEY);
+}
+
+function renderEmptySubjectsState() {
+  clearInMemorySessionState();
   closeColorPalette();
   els.subjectsList.className = "subjects-empty";
   els.subjectsList.textContent = t("subjectsEmpty");
@@ -3415,6 +3448,7 @@ async function resetSettings() {
   if (!confirm(t("resetConfirm"))) return;
 
   await chrome.storage.local.clear();
+  await clearPersistedSessionState();
   settings = structuredClone(DEFAULT_SETTINGS);
   await loadLocaleMessages(settings.language);
   syncSettingsForm();
@@ -3545,6 +3579,7 @@ els.googleCalendarModePicker?.addEventListener("click", (event) => {
   updateVersionLabel();
   applyI18n();
   await restoreSessionState();
+  await checkCurrentPage();
   if (detectedSubjects.length) {
     assignDefaultSubjectColors(detectedSubjects);
     renderSubjects(detectedSubjects, true);
