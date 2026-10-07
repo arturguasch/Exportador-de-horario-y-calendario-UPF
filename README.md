@@ -1,34 +1,49 @@
-# Exportador d'horari i calendari UPF, versión 1.1.5
+# Exportador d'horari i calendari UPF, versió 1.1.6
 
-Extensión para Chrome y Edge que exporta el horario de clases de la UPF desde Secretaría Virtual o gestioacadémica a archivos `.ics` compatibles con Google Calendar, Apple Calendar, Outlook y otros calendarios, o lo sincroniza directamente con Google Calendar.
+Extensió per a Chrome i Edge que exporta l’horari de classes de la UPF des de la Secretaria Virtual o gestió acadèmica a fitxers `.ics` compatibles amb Google Calendar, Apple Calendar, Outlook i altres calendaris, o el sincronitza directament amb Google Calendar.
 
-## Instalación sencilla
+## Instal·lació senzilla
 
-Añadir la extensión de forma automática desde la Chrome Web Store:
+Afegeix l’extensió automàticament des de la Chrome Web Store:
 https://chromewebstore.google.com/detail/ijndcdclgmgbmdmcppklikbmdgbapaig?utm_source=item-share-cb
 
-## Instalación manual
+## Instal·lació manual
 
-1. Descomprime el ZIP en una carpeta fija.
-2. Abre `chrome://extensions` o `edge://extensions`.
-3. Activa `Modo desarrollador`.
-4. Pulsa `Cargar descomprimida`.
+1. Descomprimeix el ZIP en una carpeta fixa.
+2. Obre `chrome://extensions` o `edge://extensions`.
+3. Activa el `Mode de desenvolupador`.
+4. Prem `Carrega descomprimida`.
 5. Selecciona la carpeta descomprimida.
 
-## Uso recomendado para colores en Google Calendar
+## Ús recomanat dels colors a Google Calendar
 
-Google Calendar no respeta de forma fiable los colores por evento al importar archivos `.ics`.
+### Mode automàtic (recomanat)
 
-La mejor solución es:
+Al mode automàtic pots crear un sol calendari o **un calendari per matèria**, amb nom i **color de la barra lateral** a Google Calendar. Al pas de matèries tries el color de cada classe i, si vols, un color propi per a seminaris o exàmens.
 
-1. Crear un calendario diferente para cada materia.
-2. Asignar un color a cada calendario.
-3. En la extensión, activar `Crear un .ics por cada materia seleccionada`.
-4. Importar cada `.ics` al calendario correspondiente.
+Així el color del calendari (barra lateral) i el color de cada esdeveniment es configuren des de l’extensió i es mantenen en sincronitzar.
 
-En el **modo automático**, puedes crear un solo calendario o **un calendario por materia**, con nombre y **color lateral** del calendario en Google. En el paso 3 eliges los colores de cada clase (y, si quieres, seminarios o exámenes con color propio).
+### Mode manual (`.ics`)
 
-## Cambios en la versión 1.1.5 (hotfix)
+Google Calendar no respecta de forma fiable els colors per esdeveniment en importar fitxers `.ics`.
+
+Si exportes en manual i vols colors diferenciats:
+
+1. Crea un calendari diferent per a cada matèria a Google Calendar.
+2. Assigna un color a cada calendari.
+3. A l’extensió, activa `Crear un .ics per a cada matèria seleccionada`.
+4. Importa cada `.ics` al calendari corresponent.
+
+## Canvis a la versió 1.1.6
+
+- A cada matèria detectada es pot editar el nom (per defecte el nom original de l’horari).
+- Selector de dates actualitzat: es pot escriure a mà i obrir un calendari propi (desplegable centrat amb fons enfosquit).
+- Opció de notificació uns minuts abans de cada classe al mode Google Calendar.
+- Els apartats de format (**Classes de teoria**, **Seminaris** i **Exàmens**) només es poden configurar si, a les matèries seleccionades, hi ha esdeveniments d’aquell tipus; si no n’hi ha, es mostra un avís i no cal configurar-los.
+- Bug fix: amb **un calendari per matèria**, el color de la barra lateral ja no pinta tots els esdeveniments; es respecten el color principal i els de seminaris/exàmens.
+- Bug fix: si es detecta sense matèries i es torna a obrir l’extensió, ja no reapareixen matèries d’una detecció anterior.
+
+## Canvis a la versió 1.1.5 (hotfix)
 
 - Les matèries detectades només es mostren si obres l’extensió estant a l’horari de la Secretaria Virtual o gestió acadèmica; en qualsevol altra pàgina cal tornar a l’horari i prémer «Detectar matèries».
 - En tornar a detectar, es conserven colors, noms de calendari i altres preferències ja configurades per a matèries que coincideixin.
@@ -37,97 +52,97 @@ En el **modo automático**, puedes crear un solo calendario o **un calendario po
 - Hotfix: si un color encara no es pot aplicar, l’esdeveniment es sincronitza sense color en lloc de fallar.
 - Enllaç del tutorial actualitzat: https://youtu.be/tbHzqdp6fEU
 
-## Cambios en la versión 1.1.4
+## Canvis a la versió 1.1.4
 
-- En el modo automático, el nombre del calendario pasa al paso 4 (después de detectar materias).
-- Opción de **un solo calendario** (por defecto) o **un calendario por materia**.
-- Con un calendario por materia se puede editar el nombre y el color lateral de cada calendario.
-- Selector de color renovado: paleta de Google, barra de colores guardados, selector personalizado (tono y saturación), pipeta, campo HEX y previsualización.
-- El selector se abre centrado con fondo oscuro; correcciones en negro, blanco y colores sin saturación.
-- Paso 4 renombrado a **Nom i color lateral del calendari**, con texto que explica que el color es el de la **barra lateral** de Google Calendar.
-- Enlace «Algun dubte? / Veure el tutorial» al vídeo de ayuda: https://youtu.be/tbHzqdp6fEU
+- Al mode automàtic, el nom del calendari passa al pas 4 (després de detectar matèries).
+- Opció d’**un sol calendari** (per defecte) o **un calendari per matèria**.
+- Amb un calendari per matèria es pot editar el nom i el color lateral de cada calendari.
+- Selector de color renovat: paleta de Google, barra de colors desats, selector personalitzat (to i saturació), pipeta, camp HEX i previsualització.
+- El selector s’obre centrat amb fons enfosquit; correccions en negre, blanc i colors sense saturació.
+- Pas 4 reanomenat a **Nom i color lateral del calendari**, amb text que explica que el color és el de la **barra lateral** de Google Calendar.
+- Enllaç «Algun dubte? / Veure el tutorial» al vídeo d’ajuda: https://youtu.be/tbHzqdp6fEU
 
-## Cambios en la versión 1.1.3
+## Canvis a la versió 1.1.3
 
-- Si una asignatura tiene varios grupos de seminarios (p. ej. 301, 302, 303), aparece un aviso ⚠️ junto al desplegable.
-- Dentro del desplegable se pueden elegir qué grupos exportar o sincronizar (Tots / Cap / chips por grupo).
-- Al pasar el ratón por el aviso se explica que se han detectado varios grupos; al hacer clic se descarta el aviso.
-- Al volver a pulsar «Detectar matèries», la selección de grupos se reinicia a todos (evita quedarse solo con un grupo anterior).
-- El color opcional de seminarios/exámenes se aclara: siempre se incluyen; «Color propi» solo cambia el color.
-- Tras sincronizar o exportar, los números y detalles quedan en un desplegable «Detalles técnicos» (cerrado por defecto).
-- Si se borra el calendario en Google Calendar, la extensión detecta que ya no existe, crea uno nuevo y no falla con errores 410 de eventos borrados.
-- La lista de materias crece con el contenido (sin barra de scroll interna fija).
+- Si una assignatura té diversos grups de seminaris (p. ex. 301, 302, 303), apareix un avís ⚠️ al costat del desplegable.
+- Dins del desplegable es poden triar quins grups exportar o sincronitzar (Tots / Cap / xips per grup).
+- En passar el ratolí per l’avís s’explica que s’han detectat diversos grups; en fer-hi clic se’n descarta l’avís.
+- En tornar a prémer «Detectar matèries», la selecció de grups es reinicia a tots (evita quedar-se només amb un grup anterior).
+- El color opcional de seminaris/exàmens s’aclareix: sempre s’inclouen; «Color propi» només canvia el color.
+- Després de sincronitzar o exportar, els números i detalls queden en un desplegable «Detalls tècnics» (tancat per defecte).
+- Si se suprimeix el calendari a Google Calendar, l’extensió detecta que ja no existeix, en crea un de nou i no falla amb errors 410 d’esdeveniments esborrats.
+- La llista de matèries creix amb el contingut (sense barra de desplaçament interna fixa).
 
-## Cambios en la versión 1.1.2
+## Canvis a la versió 1.1.2
 
-- Hotfix: se corrige la codificación UTF-8 en textos de formato (acentos y icono ⚙ de ajustes de bloques).
-- Hotfix: se restaura la flecha ▾ del desplegable de color y de las materias.
-- Hotfix: el engranaje de opciones de formato vuelve a abrirse (mismo problema de `resize` del popup).
+- Hotfix: es corregeix la codificació UTF-8 en textos de format (accents i icona ⚙ d’ajustaments de blocs).
+- Hotfix: es restaura la fletxa ▾ del desplegable de color i de les matèries.
+- Hotfix: l’engranatge d’opcions de format torna a obrir-se (mateix problema de `resize` del popup).
 
-## Cambios en la versión 1.1.1
+## Canvis a la versió 1.1.1
 
-- Hotfix: el selector de color por materia se cerraba al instante al abrirse (el popup disparaba `resize` y vaciaba la paleta).
-- Se mantiene la paleta flotante original de la 1.1.0.
+- Hotfix: el selector de color per matèria es tancava a l’instant en obrir-se (el popup disparava `resize` i buidava la paleta).
+- Es manté la paleta flotant original de la 1.1.0.
 
-## Cambios en la versión 1.1.0
+## Canvis a la versió 1.1.0
 
-- Se actualiza la versión del paquete de `1.0.4` a `1.1.0`.
-- El **modo automático** (Google Calendar) pasa a ser el modo principal: aparece a la izquierda y es el predeterminado.
-- Se elimina el aviso de que el modo automático está en pruebas.
-- Barra de progreso durante la sincronización (`X/Y`, creados / actualizados / fallidos).
-- Mensajes de estado claros: en curso (amarillo), éxito (verde), avisos o error (amarillo / rojo), con opción de contacto por correo si algo falla.
-- Lista de eventos fallidos tras la sincronización.
-- Si ya existe un calendario con el mismo nombre, la extensión pregunta dentro del panel de progreso si se quieren borrar los eventos previos o conservarlos y sincronizar.
-- Botón de emergencia para detener la sincronización.
-- Formato de títulos con apartados **Classes de teoria**, **Seminaris** y **Exàmens**.
-- Cada bloque de formato puede usar el separador `|` (activo por defecto solo en Aula; si dos bloques vecinos lo tienen, solo aparece un `|`).
-- Enlace fijo para apoyar el mantenimiento del proyecto: https://buymeacoffee.com/openextensions
-- Botón **Reportar un error** en Configuración.
-- Política de privacidad actualizada a `https://upfcalendarexporter.es/#privacidad`.
-- Ajustes de UI: scroll más limpio; idioma y modo oscuro se guardan al momento (sin botón «Desar» redundante).
-- Durante la sincronización con Google hay que mantener el popup abierto hasta que termine.
+- S’actualitza la versió del paquet de `1.0.4` a `1.1.0`.
+- El **mode automàtic** (Google Calendar) passa a ser el mode principal: apareix a l’esquerra i és el predeterminat.
+- S’elimina l’avís que el mode automàtic està en proves.
+- Barra de progrés durant la sincronització (`X/Y`, creats / actualitzats / fallits).
+- Missatges d’estat clars: en curs (groc), èxit (verd), avisos o error (groc / vermell), amb opció de contacte per correu si alguna cosa falla.
+- Llista d’esdeveniments fallits després de la sincronització.
+- Si ja existeix un calendari amb el mateix nom, l’extensió pregunta dins del panell de progrés si es volen esborrar els esdeveniments previs o conservar-los i sincronitzar.
+- Botó d’emergència per aturar la sincronització.
+- Format de títols amb apartats **Classes de teoria**, **Seminaris** i **Exàmens**.
+- Cada bloc de format pot usar el separador `|` (actiu per defecte només a Aula; si dos blocs veïns el tenen, només n’apareix un `|`).
+- Enllaç fix per donar suport al manteniment del projecte: https://buymeacoffee.com/openextensions
+- Botó **Reportar un error** a Configuració.
+- Política de privacitat actualitzada a `https://upfcalendarexporter.es/#privacidad`.
+- Ajustos d’UI: desplaçament més net; l’idioma i el mode fosc es desen a l’instant (sense botó «Desar» redundant).
+- Durant la sincronització amb Google cal mantenir el popup obert fins que acabi.
 
-## Cambios en la versión 1.0.4
+## Canvis a la versió 1.0.4
 
-- Se actualiza la versión del paquete de `1.0.3` a `1.0.4`.
-- Se añaden dos modos de exportación: **modo manual** (`.ics`) y **modo automático** (sincronización con Google Calendar).
-- El modo automático se muestra como funcionalidad **en pruebas**; puede no funcionar correctamente para todos los usuarios mientras se completa la configuración de Google OAuth.
-- Nueva interfaz por pasos para exportar o sincronizar el horario.
-- Personalización del formato de los títulos de eventos (teoría, seminarios y exámenes) con bloques, prefijos, sufijos y texto propio.
-- Detección de materias, selección por asignatura y asignación de colores en el modo automático.
-- Se añaden los permisos `identity` y `tabs`, y acceso a `googleapis.com` y `accounts.google.com` para la sincronización con Google Calendar.
-- Mejoras en la zona horaria `Europe/Madrid` para la exportación `.ics`.
-- Aviso visible en amarillo en el modo automático indicando que la sincronización está en pruebas.
-- Actualización de la política de privacidad para reflejar el uso opcional de Google Calendar.
+- S’actualitza la versió del paquet de `1.0.3` a `1.0.4`.
+- S’afegeixen dos modes d’exportació: **mode manual** (`.ics`) i **mode automàtic** (sincronització amb Google Calendar).
+- El mode automàtic es mostra com a funcionalitat **en proves**; pot no funcionar correctament per a tots els usuaris mentre es completa la configuració de Google OAuth.
+- Nova interfície per passos per exportar o sincronitzar l’horari.
+- Personalització del format dels títols d’esdeveniments (teoria, seminaris i exàmens) amb blocs, prefixos, sufixos i text propi.
+- Detecció de matèries, selecció per assignatura i assignació de colors al mode automàtic.
+- S’afegeixen els permisos `identity` i `tabs`, i accés a `googleapis.com` i `accounts.google.com` per a la sincronització amb Google Calendar.
+- Millores a la zona horària `Europe/Madrid` per a l’exportació `.ics`.
+- Avís visible en groc al mode automàtic indicant que la sincronització està en proves.
+- Actualització de la política de privacitat per reflectir l’ús opcional de Google Calendar.
 
-## Cambios en la versión 1.0.3
+## Canvis a la versió 1.0.3
 
-- Se actualiza la versión del paquete de `1.0.2` a `1.0.3`.
-- Se cambia el nombre a `Exportador d'horari i calendari UPF` y se mejora la descripción para SEO.
-- Se actualiza el enlace público de gestioacadémica para abrir directamente con entrada pública e idioma catalán.
-- Se elimina el permiso `tabs`; la extensión mantiene `activeTab`, `scripting`, `downloads` y `storage`.
-- Se añade soporte para `https://gestioacademica.upf.edu/*`, además de `https://secretariavirtual.upf.edu/*`.
-- El aviso inicial aparece en rojo cuando la pestaña actual no es una página compatible de la UPF.
-- El aviso de página no compatible incluye enlaces a la secretaría virtual de la UPF y al horario público de gestioacadémica.
-- El primer paso de ayuda permite entrar desde la secretaría virtual de la UPF o desde gestioacadémica.
-- El subtítulo se generaliza a cualquier calendario compatible, no solo Google Calendar.
-- Se eliminan los campos visibles `Nombre del calendario` y `Nombre del archivo`; ahora se usan nombres por defecto según el idioma.
-- Los seminarios muestran el grupo con prefijo `G:` en el título del evento, por ejemplo `G: 102`.
-- Se añade modo oscuro configurable desde el panel de configuración; por defecto sigue el tema del navegador o del sistema.
-- Se corrige el botón `Cap` / `Ninguna` / `None` para poder dejar todas las materias desmarcadas.
-- Se añade la versión de la extensión dentro del panel de configuración.
-- Se mejora la compatibilidad de los archivos `.ics` incluyendo la zona horaria `Europe/Madrid` con `VTIMEZONE`.
-- Las etiquetas de la descripción del evento se traducen según el idioma seleccionado.
-- Se evita descargar archivos `.ics` vacíos cuando no hay eventos exportables.
-- Los mensajes de error del área de estado se muestran en una caja roja y vuelven al estilo normal cuando desaparece el error.
-- Se limpian claves de traducción no utilizadas.
+- S’actualitza la versió del paquet de `1.0.2` a `1.0.3`.
+- Es canvia el nom a `Exportador d'horari i calendari UPF` i es millora la descripció per a SEO.
+- S’actualitza l’enllaç públic de gestió acadèmica per obrir directament amb entrada pública i idioma català.
+- S’elimina el permís `tabs`; l’extensió manté `activeTab`, `scripting`, `downloads` i `storage`.
+- S’afegeix suport per a `https://gestioacademica.upf.edu/*`, a més de `https://secretariavirtual.upf.edu/*`.
+- L’avís inicial apareix en vermell quan la pestanya actual no és una pàgina compatible de la UPF.
+- L’avís de pàgina no compatible inclou enllaços a la secretaria virtual de la UPF i a l’horari públic de gestió acadèmica.
+- El primer pas d’ajuda permet entrar des de la secretaria virtual de la UPF o des de gestió acadèmica.
+- El subtítol es generalitza a qualsevol calendari compatible, no només Google Calendar.
+- S’eliminen els camps visibles de nom del calendari i del fitxer; ara s’usen noms per defecte segons l’idioma.
+- Els seminaris mostren el grup amb prefix `G:` al títol de l’esdeveniment, per exemple `G: 102`.
+- S’afegeix mode fosc configurable des del panell de configuració; per defecte segueix el tema del navegador o del sistema.
+- Es corregeix el botó `Cap` / `Ninguna` / `None` per poder deixar totes les matèries desmarcades.
+- S’afegeix la versió de l’extensió dins del panell de configuració.
+- Es millora la compatibilitat dels fitxers `.ics` incloent-hi la zona horària `Europe/Madrid` amb `VTIMEZONE`.
+- Les etiquetes de la descripció de l’esdeveniment es tradueixen segons l’idioma seleccionat.
+- S’evita descarregar fitxers `.ics` buits quan no hi ha esdeveniments exportables.
+- Els missatges d’error de l’àrea d’estat es mostren en una caixa vermella i tornen a l’estil normal quan desapareix l’error.
+- Es netegen claus de traducció no utilitzades.
 
-## Privacidad
+## Privacitat
 
-Extensión no oficial. No está afiliada, avalada ni mantenida por la Universitat Pompeu Fabra.
+Extensió no oficial. No està afiliada, avalada ni mantinguda per la Universitat Pompeu Fabra.
 
-La extensión procesa los datos localmente en el navegador. No recopila, vende ni transmite datos personales a servidores propios. La sincronización con Google Calendar solo ocurre si el usuario conecta su cuenta y pulsa sincronizar; en ese caso, los eventos seleccionados se envían a la cuenta de Google del usuario.
+L’extensió processa les dades localment al navegador. No recopila, ven ni transmet dades personals a servidors propis. La sincronització amb Google Calendar només es fa si l’usuari connecta el seu compte i prem sincronitzar; en aquest cas, els esdeveniments seleccionats s’envien al compte de Google de l’usuari.
 
-Política de privacidad: https://upfcalendarexporter.es/#privacidad
+Política de privacitat: https://upfcalendarexporter.es/#privacidad
 
-Apoyo al proyecto: https://buymeacoffee.com/openextensions
+Suport al projecte: https://buymeacoffee.com/openextensions

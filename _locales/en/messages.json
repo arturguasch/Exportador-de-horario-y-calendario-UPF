@@ -32,6 +32,21 @@
   "darkModeLabel": {
     "message": "Dark mode"
   },
+  "datePickerClear": {
+    "message": "Clear"
+  },
+  "datePickerNextMonth": {
+    "message": "Next month"
+  },
+  "datePickerOpen": {
+    "message": "Open calendar"
+  },
+  "datePickerPrevMonth": {
+    "message": "Previous month"
+  },
+  "datePickerToday": {
+    "message": "Today"
+  },
   "descriptionBuilding": {
     "message": "Building"
   },
@@ -94,6 +109,36 @@
   },
   "examFormat": {
     "message": "Exams"
+  },
+  "formatNoTheoryDetected": {
+    "message": "No theory classes were found in your timetable. You don’t need to configure this format."
+  },
+  "formatNoSeminarDetected": {
+    "message": "No seminars were found in your timetable. You don’t need to configure this format."
+  },
+  "formatNoExamDetected": {
+    "message": "No exams were found in your timetable. You don’t need to configure this format."
+  },
+  "formatNoTheorySelected": {
+    "message": "No theory classes were found in the selected subjects. You don’t need to configure this format."
+  },
+  "formatNoSeminarSelected": {
+    "message": "No seminars were found in the selected subjects. You don’t need to configure this format."
+  },
+  "formatNoExamSelected": {
+    "message": "No exams were found in the selected subjects. You don’t need to configure this format."
+  },
+  "googleEventReminder": {
+    "message": "Notify me before each class"
+  },
+  "googleEventReminderMinutes": {
+    "message": "Minutes before"
+  },
+  "googleEventReminderUp": {
+    "message": "Increase minutes"
+  },
+  "googleEventReminderDown": {
+    "message": "Decrease minutes"
   },
   "exportIcs": {
     "message": "Export .ics"
@@ -322,6 +367,12 @@
   },
   "subjectsTitle": {
     "message": "Subjects"
+  },
+  "subjectDisplayNameLabel": {
+    "message": "Subject name"
+  },
+  "subjectDisplayNameHint": {
+    "message": "You can edit the name. If you leave it empty, the original name is restored."
   },
   "theoryFormat": {
     "message": "Theory classes"

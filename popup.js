@@ -42,6 +42,8 @@ const DEFAULT_SETTINGS = {
   googleCalendarMode: "single",
   googleCalendarColors: {},
   googleSubjectCalendarNames: {},
+  googleEventReminderEnabled: false,
+  googleEventReminderMinutes: 10,
   savedColors: [],
   subjectColors: {},
   subjectTypeColors: {},
@@ -187,11 +189,34 @@ let selectedSeminarGroups = {};
 let acknowledgedSeminarGroupWarnings = new Set();
 /** Subjects where the user has already clicked a seminar group chip (not Tots/Cap). */
 let seminarGroupChipInteracted = new Set();
+/** Custom subject titles for this browser session only (not permanent settings). */
+let subjectDisplayNames = {};
+/** Which event kinds exist in the last successful detection. */
+let detectedEventKinds = { theory: false, seminar: false, exam: false };
+/** False until the user has detected subjects at least once this session. */
+let scheduleKindsKnown = false;
+/**
+ * Sample room/group per subject and event kind for format previews.
+ * @type {Record<string, Partial<Record<"theory"|"seminar"|"exam", { room: string, group: string }>>>}
+ */
+let subjectFormatPreviewSamples = {};
 const systemColorScheme = window.matchMedia("(prefers-color-scheme: dark)");
 
 const els = {
   startDate: document.getElementById("startDate"),
   endDate: document.getElementById("endDate"),
+  startDatePickerBtn: document.getElementById("startDatePickerBtn"),
+  endDatePickerBtn: document.getElementById("endDatePickerBtn"),
+  datePickerBackdrop: document.getElementById("datePickerBackdrop"),
+  datePickerPopover: document.getElementById("datePickerPopover"),
+  datePickerHeading: document.getElementById("datePickerHeading"),
+  datePickerTitle: document.getElementById("datePickerTitle"),
+  datePickerWeekdays: document.getElementById("datePickerWeekdays"),
+  datePickerGrid: document.getElementById("datePickerGrid"),
+  datePickerPrev: document.getElementById("datePickerPrev"),
+  datePickerNext: document.getElementById("datePickerNext"),
+  datePickerClear: document.getElementById("datePickerClear"),
+  datePickerToday: document.getElementById("datePickerToday"),
   calendarName: document.getElementById("calendarName"),
   googleCalendarName: document.getElementById("googleCalendarName"),
   googleCalendarsStep: document.getElementById("googleCalendarsStep"),
@@ -204,6 +229,12 @@ const els = {
   fileName: document.getElementById("fileName"),
   includeHolidays: document.getElementById("includeHolidays"),
   includeDescription: document.getElementById("includeDescription"),
+  googleEventReminder: document.getElementById("googleEventReminder"),
+  googleEventReminderMinutes: document.getElementById("googleEventReminderMinutes"),
+  googleEventReminderOption: document.getElementById("googleEventReminderOption"),
+  googleEventReminderStepper: document.getElementById("googleEventReminderStepper"),
+  googleEventReminderUp: document.getElementById("googleEventReminderUp"),
+  googleEventReminderDown: document.getElementById("googleEventReminderDown"),
   splitBySubject: document.getElementById("splitBySubject"),
   detectSubjects: document.getElementById("detectSubjects"),
   selectAllSubjects: document.getElementById("selectAllSubjects"),
@@ -315,6 +346,188 @@ function setDefaultDates() {
   end.setDate(end.getDate() + 95);
   els.startDate.value = formatDateInput(today);
   els.endDate.value = formatDateInput(end);
+}
+
+const DATE_PICKER_WEEKDAYS = {
+  ca: ["Dl", "Dt", "Dc", "Dj", "Dv", "Ds", "Dg"],
+  es: ["Lu", "Ma", "Mi", "Ju", "Vi", "Sá", "Do"],
+  en: ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
+};
+
+const DATE_PICKER_MONTHS = {
+  ca: ["gener", "febrer", "març", "abril", "maig", "juny", "juliol", "agost", "setembre", "octubre", "novembre", "desembre"],
+  es: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+  en: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+};
+
+let activeDatePickerTarget = null;
+let datePickerView = new Date();
+let ignoreDatePickerOutsideClick = false;
+
+function parseDateInputValue(value) {
+  const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(year, month - 1, day);
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
+  return date;
+}
+
+function getDatePickerTargetInput() {
+  if (activeDatePickerTarget === "endDate") return els.endDate;
+  if (activeDatePickerTarget === "startDate") return els.startDate;
+  return null;
+}
+
+function getDatePickerTriggerButton() {
+  if (activeDatePickerTarget === "endDate") return els.endDatePickerBtn;
+  if (activeDatePickerTarget === "startDate") return els.startDatePickerBtn;
+  return null;
+}
+
+function closeDatePicker() {
+  if (els.datePickerBackdrop) {
+    els.datePickerBackdrop.classList.add("hidden");
+    els.datePickerBackdrop.setAttribute("aria-hidden", "true");
+  }
+  if (els.datePickerPopover) {
+    els.datePickerPopover.classList.add("hidden");
+    els.datePickerPopover.setAttribute("aria-hidden", "true");
+  }
+  els.startDatePickerBtn?.setAttribute("aria-expanded", "false");
+  els.endDatePickerBtn?.setAttribute("aria-expanded", "false");
+  activeDatePickerTarget = null;
+}
+
+function positionDatePickerPopover() {
+  const popover = els.datePickerPopover;
+  if (!popover) return;
+
+  const margin = 12;
+  const popoverHeight = popover.offsetHeight;
+  const preferredTop = 72;
+  const maxTop = Math.max(margin, window.innerHeight - popoverHeight - margin);
+
+  popover.style.left = "";
+  popover.style.top = `${Math.min(preferredTop, maxTop)}px`;
+}
+
+function renderDatePickerWeekdays() {
+  if (!els.datePickerWeekdays) return;
+  const labels = DATE_PICKER_WEEKDAYS[settings.language] || DATE_PICKER_WEEKDAYS.ca;
+  els.datePickerWeekdays.replaceChildren(
+    ...labels.map((label) => {
+      const cell = document.createElement("span");
+      cell.className = "date-picker-weekday";
+      cell.textContent = label;
+      return cell;
+    })
+  );
+}
+
+function renderDatePickerGrid() {
+  if (!els.datePickerGrid || !els.datePickerTitle) return;
+
+  const months = DATE_PICKER_MONTHS[settings.language] || DATE_PICKER_MONTHS.ca;
+  const year = datePickerView.getFullYear();
+  const month = datePickerView.getMonth();
+  els.datePickerTitle.textContent = `${months[month]} ${year}`;
+
+  const selected = parseDateInputValue(getDatePickerTargetInput()?.value);
+  const today = new Date();
+  const todayKey = formatDateInput(today);
+
+  const firstOfMonth = new Date(year, month, 1);
+  // Monday-first grid: JS Sunday=0 ... Saturday=6 → convert to Mon=0
+  const startOffset = (firstOfMonth.getDay() + 6) % 7;
+  const gridStart = new Date(year, month, 1 - startOffset);
+
+  els.datePickerGrid.replaceChildren();
+  for (let index = 0; index < 42; index += 1) {
+    const date = new Date(gridStart);
+    date.setDate(gridStart.getDate() + index);
+    const iso = formatDateInput(date);
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "date-picker-day";
+    button.textContent = String(date.getDate());
+    button.dataset.date = iso;
+
+    if (date.getMonth() !== month) button.classList.add("is-outside");
+    if (iso === todayKey) button.classList.add("is-today");
+    if (selected && iso === formatDateInput(selected)) button.classList.add("is-selected");
+
+    button.addEventListener("click", () => {
+      const input = getDatePickerTargetInput();
+      if (!input) return;
+      input.value = iso;
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+      closeDatePicker();
+      input.focus();
+    });
+
+    els.datePickerGrid.append(button);
+  }
+}
+
+function openDatePicker(targetId, trigger) {
+  if (!els.datePickerPopover || !trigger) return;
+
+  if (activeDatePickerTarget === targetId && !els.datePickerPopover.classList.contains("hidden")) {
+    closeDatePicker();
+    return;
+  }
+
+  closeColorPalette();
+  closeFormatBlockPopover();
+  activeDatePickerTarget = targetId;
+  const input = getDatePickerTargetInput();
+  const selected = parseDateInputValue(input?.value);
+  datePickerView = selected
+    ? new Date(selected.getFullYear(), selected.getMonth(), 1)
+    : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
+  els.startDatePickerBtn?.setAttribute("aria-expanded", targetId === "startDate" ? "true" : "false");
+  els.endDatePickerBtn?.setAttribute("aria-expanded", targetId === "endDate" ? "true" : "false");
+
+  if (els.datePickerHeading) {
+    els.datePickerHeading.textContent = t(targetId === "endDate" ? "endDate" : "startDate");
+  }
+
+  if (els.datePickerBackdrop?.parentElement !== document.body) {
+    document.body.append(els.datePickerBackdrop);
+  }
+  if (els.datePickerPopover.parentElement !== document.body) {
+    document.body.append(els.datePickerPopover);
+  }
+
+  ignoreDatePickerOutsideClick = true;
+  setTimeout(() => {
+    ignoreDatePickerOutsideClick = false;
+  }, 50);
+
+  renderDatePickerWeekdays();
+  renderDatePickerGrid();
+
+  els.datePickerBackdrop?.classList.remove("hidden");
+  els.datePickerBackdrop?.setAttribute("aria-hidden", "false");
+  els.datePickerPopover.classList.remove("hidden");
+  els.datePickerPopover.setAttribute("aria-hidden", "false");
+
+  requestAnimationFrame(() => positionDatePickerPopover());
+}
+
+function repositionOpenDatePicker() {
+  if (!els.datePickerPopover || els.datePickerPopover.classList.contains("hidden")) return;
+  positionDatePickerPopover();
 }
 
 function isSupportedUpfUrl(url) {
@@ -463,30 +676,31 @@ async function persistSessionState() {
   const data = await chrome.storage.session.get(SESSION_KEY);
   const existing = data[SESSION_KEY] || {};
 
+  const seminarGroupsSelected = {};
+  for (const [subject, groups] of Object.entries(selectedSeminarGroups)) {
+    seminarGroupsSelected[subject] = [...groups];
+  }
+
+  // Always write subject fields (including empty) so a later empty detect
+  // does not leave stale subjects in session storage after reopen.
   const payload = {
     ...existing,
     startDate: els.startDate.value,
     endDate: els.endDate.value,
     includeHolidays: els.includeHolidays.checked,
     includeDescription: els.includeDescription.checked,
+    subjectDisplayNames,
+    detectedEventKinds,
+    scheduleKindsKnown,
+    detectedSubjects,
+    selectedSubjects: [...selectedSubjects],
+    subjectTypeFlags,
+    subjectSeminarGroups,
+    selectedSeminarGroups: seminarGroupsSelected,
+    acknowledgedSeminarGroupWarnings: [...acknowledgedSeminarGroupWarnings],
+    seminarGroupChipInteracted: [...seminarGroupChipInteracted],
+    subjectFormatPreviewSamples,
   };
-
-  if (detectedSubjects.length) {
-    const seminarGroupsSelected = {};
-    for (const [subject, groups] of Object.entries(selectedSeminarGroups)) {
-      seminarGroupsSelected[subject] = [...groups];
-    }
-
-    Object.assign(payload, {
-      detectedSubjects,
-      selectedSubjects: [...selectedSubjects],
-      subjectTypeFlags,
-      subjectSeminarGroups,
-      selectedSeminarGroups: seminarGroupsSelected,
-      acknowledgedSeminarGroupWarnings: [...acknowledgedSeminarGroupWarnings],
-      seminarGroupChipInteracted: [...seminarGroupChipInteracted],
-    });
-  }
 
   await chrome.storage.session.set({ [SESSION_KEY]: payload });
 }
@@ -503,7 +717,23 @@ async function restoreSessionState() {
   if (state.includeHolidays !== undefined) els.includeHolidays.checked = state.includeHolidays;
   if (state.includeDescription !== undefined) els.includeDescription.checked = state.includeDescription;
 
-  if (!(await isCurrentTabOnSchedule())) return;
+  if (state.subjectDisplayNames && typeof state.subjectDisplayNames === "object") {
+    subjectDisplayNames = { ...state.subjectDisplayNames };
+  }
+
+  if (state.detectedEventKinds && typeof state.detectedEventKinds === "object") {
+    detectedEventKinds = {
+      theory: Boolean(state.detectedEventKinds.theory),
+      seminar: Boolean(state.detectedEventKinds.seminar),
+      exam: Boolean(state.detectedEventKinds.exam),
+    };
+  }
+  scheduleKindsKnown = Boolean(state.scheduleKindsKnown);
+
+  if (!(await isCurrentTabOnSchedule())) {
+    updateFormatKindSections();
+    return;
+  }
 
   if (state.subjectSeminarGroups && typeof state.subjectSeminarGroups === "object") {
     subjectSeminarGroups = state.subjectSeminarGroups;
@@ -540,11 +770,18 @@ async function restoreSessionState() {
     seminarGroupChipInteracted = new Set(state.seminarGroupChipInteracted);
   }
 
-  if (Array.isArray(state.detectedSubjects) && state.detectedSubjects.length) {
-    detectedSubjects = state.detectedSubjects;
-    selectedSubjects = new Set(state.selectedSubjects || state.detectedSubjects);
-    renderSubjects(detectedSubjects);
+  if (state.subjectFormatPreviewSamples && typeof state.subjectFormatPreviewSamples === "object") {
+    subjectFormatPreviewSamples = state.subjectFormatPreviewSamples;
   }
+
+  if (Array.isArray(state.detectedSubjects)) {
+    detectedSubjects = state.detectedSubjects;
+    selectedSubjects = state.detectedSubjects.length
+      ? new Set(state.selectedSubjects || state.detectedSubjects)
+      : new Set();
+    renderSubjects(detectedSubjects, !state.detectedSubjects.length);
+  }
+  updateFormatKindSections();
 }
 
 function ensureSubjectColorsMap() {
@@ -629,6 +866,70 @@ function buildSubjectTypeFlags(items) {
   }
 
   return flags;
+}
+
+function buildDetectedEventKinds(items) {
+  const kinds = { theory: false, seminar: false, exam: false };
+
+  for (const item of items) {
+    if (!shouldExport(item, false)) continue;
+    if (!normalizeSubject(item)) continue;
+    const key = typeKey(item);
+    if (key in kinds) kinds[key] = true;
+  }
+
+  return kinds;
+}
+
+function selectedSubjectsHaveFormatKind(kind) {
+  for (const subject of selectedSubjects) {
+    if (subjectFormatPreviewSamples?.[subject]?.[kind]) return true;
+  }
+  return false;
+}
+
+function isFormatKindAvailable(kind) {
+  if (!scheduleKindsKnown) return true;
+  if (!selectedSubjects.size) return false;
+  return selectedSubjectsHaveFormatKind(kind);
+}
+
+function formatKindEmptyMessageKey(kind) {
+  const missingInSchedule = scheduleKindsKnown && !detectedEventKinds[kind];
+  if (missingInSchedule) {
+    if (kind === "theory") return "formatNoTheoryDetected";
+    if (kind === "seminar") return "formatNoSeminarDetected";
+    return "formatNoExamDetected";
+  }
+  if (kind === "theory") return "formatNoTheorySelected";
+  if (kind === "seminar") return "formatNoSeminarSelected";
+  return "formatNoExamSelected";
+}
+
+function updateFormatKindSections() {
+  for (const kind of ["theory", "seminar", "exam"]) {
+    const section = document.querySelector(`.block-builder[data-format-kind="${kind}"]`);
+    if (!section) continue;
+
+    const available = isFormatKindAvailable(kind);
+    section.classList.toggle("is-inactive", !available);
+    section.setAttribute("aria-disabled", available ? "false" : "true");
+
+    const notice = section.querySelector(".format-kind-empty");
+    if (notice) {
+      notice.classList.toggle("hidden", available);
+      notice.textContent = t(formatKindEmptyMessageKey(kind));
+    }
+
+    const container = getBlockContainer(kind);
+    container?.querySelectorAll(".block-item").forEach((item) => {
+      item.draggable = available;
+    });
+
+    if (!available && activeFormatBlock?.kind === kind) {
+      closeFormatBlockPopover();
+    }
+  }
 }
 
 function normalizeSeminarGroup(value) {
@@ -820,12 +1121,27 @@ function getSubjectCalendarName(subject) {
   ensureSubjectCalendarNamesMap();
   const stored = settings.googleSubjectCalendarNames[subject];
   if (typeof stored === "string" && stored.trim()) return stored.trim();
-  return subject;
+  return getSubjectDisplayName(subject);
 }
 
 function setSubjectCalendarName(subject, name) {
   ensureSubjectCalendarNamesMap();
   settings.googleSubjectCalendarNames[subject] = name;
+}
+
+function getSubjectDisplayName(subject) {
+  const stored = subjectDisplayNames[subject];
+  if (typeof stored === "string" && stored.trim()) return stored.trim();
+  return subject;
+}
+
+function setSubjectDisplayName(subject, name) {
+  const trimmed = String(name ?? "").trim();
+  if (!trimmed || trimmed === subject) {
+    delete subjectDisplayNames[subject];
+    return;
+  }
+  subjectDisplayNames[subject] = trimmed;
 }
 
 function getEventColorId(item) {
@@ -1394,6 +1710,8 @@ function openColorPalette(subject, anchor, kind = "main") {
     return;
   }
 
+  closeDatePicker();
+
   if (els.colorPaletteBackdrop?.parentElement !== document.body) {
     document.body.append(els.colorPaletteBackdrop);
   }
@@ -1475,18 +1793,42 @@ function createColorPickerTrigger(subject, kind = "main") {
   return trigger;
 }
 
+function applySubjectSelection(subject, selected) {
+  if (selected) selectedSubjects.add(subject);
+  else selectedSubjects.delete(subject);
+  persistSessionState();
+  renderGoogleCalendarsStep();
+  updateFormatPreview();
+  updateFormatKindSections();
+}
+
 function createSubjectCheckbox(subject) {
+  const wrap = document.createElement("label");
+  wrap.className = "subject-check";
+
   const checkbox = document.createElement("input");
   checkbox.type = "checkbox";
+  checkbox.className = "subject-check-input";
   checkbox.checked = selectedSubjects.has(subject);
-  checkbox.addEventListener("click", (event) => event.stopPropagation());
-  checkbox.addEventListener("change", () => {
-    if (checkbox.checked) selectedSubjects.add(subject);
-    else selectedSubjects.delete(subject);
-    persistSessionState();
-    renderGoogleCalendarsStep();
+  checkbox.setAttribute("aria-label", subject);
+
+  const mark = document.createElement("span");
+  mark.className = "subject-check-mark";
+  mark.setAttribute("aria-hidden", "true");
+
+  wrap.addEventListener("mousedown", (event) => event.stopPropagation());
+  wrap.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    checkbox.checked = !checkbox.checked;
+    applySubjectSelection(subject, checkbox.checked);
   });
-  return checkbox;
+  checkbox.addEventListener("change", () => {
+    applySubjectSelection(subject, checkbox.checked);
+  });
+
+  wrap.append(checkbox, mark);
+  return wrap;
 }
 
 function fillSubjectTypeColorSlot(slot, subject, kind, enabled) {
@@ -1707,28 +2049,86 @@ function createSeminarGroupSelector(subject) {
   return section;
 }
 
+function autosizeSubjectNameField(field) {
+  field.style.height = "auto";
+  field.style.height = `${Math.max(field.scrollHeight, 32)}px`;
+}
+
+function createSubjectNameInput(subject) {
+  const name = document.createElement("textarea");
+  name.className = "subject-name";
+  name.rows = 1;
+  name.maxLength = 100;
+  name.autocomplete = "off";
+  name.spellcheck = false;
+  name.setAttribute("aria-label", t("subjectDisplayNameLabel"));
+  name.title = t("subjectDisplayNameHint");
+  name.dataset.subjectKey = subject;
+  name.value = getSubjectDisplayName(subject);
+
+  const stop = (event) => event.stopPropagation();
+  name.addEventListener("click", stop);
+  name.addEventListener("mousedown", stop);
+  name.addEventListener("pointerdown", stop);
+  name.addEventListener("keydown", (event) => {
+    stop(event);
+    if (event.key === "Enter") {
+      event.preventDefault();
+      name.blur();
+    }
+  });
+
+  name.addEventListener("input", () => {
+    autosizeSubjectNameField(name);
+    setSubjectDisplayName(subject, name.value);
+    persistSessionState();
+    updateFormatPreview();
+  });
+
+  name.addEventListener("blur", () => {
+    if (!name.value.trim()) {
+      name.value = subject;
+      setSubjectDisplayName(subject, "");
+    } else {
+      name.value = getSubjectDisplayName(subject);
+    }
+    autosizeSubjectNameField(name);
+    persistSessionState();
+    if (getGoogleCalendarMode() === "perSubject") {
+      renderGoogleCalendarsStep();
+    }
+    updateFormatPreview();
+  });
+
+  requestAnimationFrame(() => autosizeSubjectNameField(name));
+  return name;
+}
+
+function createSubjectExpandSpacer() {
+  const spacer = document.createElement("span");
+  spacer.className = "subject-expand-spacer";
+  spacer.setAttribute("aria-hidden", "true");
+  return spacer;
+}
+
 function createSubjectMainRow(subject, { expandButton = null, warningBadge = null } = {}) {
   const row = document.createElement("div");
   row.className = "subject-row";
 
-  const name = document.createElement("div");
-  name.className = "subject-name";
-  name.textContent = subject;
-
-  row.append(createSubjectCheckbox(subject), name);
+  const actions = document.createElement("div");
+  actions.className = "subject-row-actions";
 
   if (document.body.classList.contains("mode-google")) {
-    row.append(createColorPickerTrigger(subject, "main"));
+    actions.append(createColorPickerTrigger(subject, "main"));
   }
 
   if (warningBadge) {
-    row.append(warningBadge);
+    actions.append(warningBadge);
   }
 
-  if (expandButton) {
-    row.append(expandButton);
-  }
+  actions.append(expandButton || createSubjectExpandSpacer());
 
+  row.append(createSubjectCheckbox(subject), createSubjectNameInput(subject), actions);
   return row;
 }
 
@@ -1832,12 +2232,13 @@ function renderGoogleCalendarsStep() {
   }
 
   for (const subject of subjects) {
+    const displayName = getSubjectDisplayName(subject);
     const row = document.createElement("div");
     row.className = "google-calendar-subject-row";
 
     const label = document.createElement("span");
     label.className = "google-calendar-subject-label";
-    label.textContent = subject;
+    label.textContent = displayName;
 
     const nameField = document.createElement("label");
     nameField.className = "field google-calendar-subject-name";
@@ -1847,7 +2248,7 @@ function renderGoogleCalendarsStep() {
     nameInput.type = "text";
     nameInput.maxLength = 100;
     nameInput.autocomplete = "off";
-    nameInput.placeholder = subject;
+    nameInput.placeholder = displayName;
     nameInput.value = settings.googleSubjectCalendarNames?.[subject] ?? "";
     nameInput.addEventListener("input", () => {
       setSubjectCalendarName(subject, nameInput.value);
@@ -1876,6 +2277,75 @@ function setGoogleCalendarMode(mode, persist = true) {
   settings.googleCalendarMode = mode === "perSubject" ? "perSubject" : "single";
   renderGoogleCalendarsStep();
   if (persist) saveSettingsData();
+}
+
+function normalizeReminderMinutes(value) {
+  const minutes = Math.floor(Number(value));
+  if (!Number.isFinite(minutes) || minutes < 0) return DEFAULT_SETTINGS.googleEventReminderMinutes;
+  return Math.min(minutes, 40320);
+}
+
+function isGoogleEventReminderEnabled() {
+  return Boolean(els.googleEventReminder?.checked ?? settings.googleEventReminderEnabled);
+}
+
+function getGoogleEventReminderMinutes() {
+  return normalizeReminderMinutes(
+    els.googleEventReminderMinutes?.value ?? settings.googleEventReminderMinutes
+  );
+}
+
+function autosizeReminderMinutesInput() {
+  if (!els.googleEventReminderMinutes) return;
+  const digits = String(els.googleEventReminderMinutes.value || "0").replace(/\D/g, "") || "0";
+  // +1ch de marge; creix amb cada dígit (9 -> 10 ha de notar-se).
+  const widthCh = Math.min(6, Math.max(1, digits.length) + 1);
+  els.googleEventReminderMinutes.style.width = `${widthCh}ch`;
+}
+
+function setGoogleEventReminderEnabledUI(enabled) {
+  if (!els.googleEventReminderMinutes) return;
+  els.googleEventReminderMinutes.disabled = !enabled;
+  els.googleEventReminderUp && (els.googleEventReminderUp.disabled = !enabled);
+  els.googleEventReminderDown && (els.googleEventReminderDown.disabled = !enabled);
+  els.googleEventReminderStepper?.classList.toggle("is-disabled", !enabled);
+}
+
+function syncGoogleEventReminderControls() {
+  if (!els.googleEventReminder || !els.googleEventReminderMinutes) return;
+  els.googleEventReminder.checked = Boolean(settings.googleEventReminderEnabled);
+  els.googleEventReminderMinutes.value = String(
+    normalizeReminderMinutes(settings.googleEventReminderMinutes)
+  );
+  setGoogleEventReminderEnabledUI(els.googleEventReminder.checked);
+  autosizeReminderMinutesInput();
+}
+
+function bumpGoogleEventReminderMinutes(delta) {
+  if (!els.googleEventReminder?.checked || !els.googleEventReminderMinutes) return;
+  const current = normalizeReminderMinutes(
+    els.googleEventReminderMinutes.value || settings.googleEventReminderMinutes
+  );
+  const next = normalizeReminderMinutes(current + delta);
+  settings.googleEventReminderEnabled = true;
+  settings.googleEventReminderMinutes = next;
+  els.googleEventReminderMinutes.value = String(next);
+  autosizeReminderMinutesInput();
+  saveSettingsData();
+}
+
+function bindReminderStepperButton(button, delta) {
+  if (!button) return;
+  button.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (button.disabled) return;
+    bumpGoogleEventReminderMinutes(delta);
+  });
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+  });
 }
 
 function updateGoogleUI(email) {
@@ -2079,6 +2549,8 @@ async function syncGoogleCalendar() {
       parseUpfDateTime,
       includeHolidays: els.includeHolidays.checked,
       includeDescription: els.includeDescription.checked,
+      eventReminderEnabled: isGoogleEventReminderEnabled(),
+      eventReminderMinutes: getGoogleEventReminderMinutes(),
       selectedSubjects,
       isItemAllowedBySeminarGroup,
       getSubjectColorId,
@@ -2417,9 +2889,78 @@ function resolveFormatTokenValue(token, rawValue, kind, typeLabelStr) {
   return combinePrefixSuffix(value, prefix, suffix);
 }
 
+function getFormatPreviewSubjects() {
+  try {
+    const subjects = [...selectedSubjects]
+      .filter((subject) => typeof subject === "string" && subject.trim())
+      .sort((a, b) => a.localeCompare(b));
+    return subjects.length ? subjects : null;
+  } catch {
+    return null;
+  }
+}
+
+function buildSubjectFormatPreviewSamples(items) {
+  const samples = {};
+
+  for (const item of items) {
+    if (!shouldExport(item, false)) continue;
+    const subject = normalizeSubject(item);
+    if (!subject) continue;
+
+    const kind = typeKey(item);
+    const room = clean(item.aula);
+    const group = clean(item.grup);
+    if (!samples[subject]) samples[subject] = {};
+
+    const existing = samples[subject][kind];
+    if (!existing) {
+      samples[subject][kind] = { room, group };
+    } else if (!existing.room && room) {
+      samples[subject][kind] = { room, group: group || existing.group };
+    } else if (!existing.group && group) {
+      samples[subject][kind] = { room: existing.room, group };
+    }
+  }
+
+  return samples;
+}
+
+function pickFormatPreviewSubjectKey(kind, subjects) {
+  const withKind = subjects.filter((subject) => subjectFormatPreviewSamples?.[subject]?.[kind]);
+  if (!withKind.length) return null;
+  const kindIndex = ["theory", "seminar", "exam"].indexOf(kind);
+  return withKind[(kindIndex < 0 ? 0 : kindIndex) % withKind.length];
+}
+
 function getFormatPreviewSample(kind) {
   const samples = FORMAT_PREVIEW_SAMPLES[settings.language] || FORMAT_PREVIEW_SAMPLES.ca;
-  return samples[kind];
+  const defaults = samples[kind] || samples.theory;
+
+  try {
+    const subjects = getFormatPreviewSubjects();
+    if (!subjects?.length) return defaults;
+
+    const subjectKey = pickFormatPreviewSubjectKey(kind, subjects);
+    if (!subjectKey) return defaults;
+
+    const displayName = String(getSubjectDisplayName(subjectKey) || subjectKey).trim();
+    if (!displayName) return defaults;
+
+    const eventSample = subjectFormatPreviewSamples?.[subjectKey]?.[kind] || null;
+    if (!eventSample) return defaults;
+
+    const room = String(eventSample.room || "").trim();
+    const group = String(eventSample.group || "").trim();
+
+    return {
+      subject: displayName,
+      room: room || defaults.room,
+      group: group || defaults.group,
+    };
+  } catch {
+    return defaults;
+  }
 }
 
 function getTokensFromContainer(kind) {
@@ -2462,7 +3003,7 @@ function buildTitleFromTokens(subject, room, type, tokens, group = "", kind = "t
 }
 
 function buildCleanSummary(item) {
-  const subject = normalizeSubject(item);
+  const subject = getSubjectDisplayName(normalizeSubject(item));
   const room = clean(item.aula);
   const key = typeKey(item);
   const group = clean(item.grup);
@@ -2801,8 +3342,9 @@ function collectOpenSubjectCards() {
   const open = new Set();
 
   els.subjectsList?.querySelectorAll("details.subject-card[open]").forEach((card) => {
-    const name = card.querySelector(".subject-name")?.textContent?.trim();
-    if (name) open.add(name);
+    const nameInput = card.querySelector(".subject-name");
+    const key = nameInput?.dataset?.subjectKey || nameInput?.value?.trim();
+    if (key) open.add(key);
   });
 
   return open;
@@ -2816,6 +3358,8 @@ function renderSubjects(subjects, preserveEmptySelection = false) {
     els.subjectsList.className = "subjects-empty";
     els.subjectsList.textContent = t("noSubjectsInRange");
     renderGoogleCalendarsStep();
+    updateFormatPreview();
+    updateFormatKindSections();
     return;
   }
 
@@ -2842,6 +3386,8 @@ function renderSubjects(subjects, preserveEmptySelection = false) {
   });
 
   renderGoogleCalendarsStep();
+  updateFormatPreview();
+  updateFormatKindSections();
 }
 
 async function readItemsFromUpf() {
@@ -2865,6 +3411,9 @@ async function detectSubjects() {
     const items = await readItemsFromUpf();
     subjectTypeFlags = buildSubjectTypeFlags(items);
     subjectSeminarGroups = buildSubjectSeminarGroups(items);
+    subjectFormatPreviewSamples = buildSubjectFormatPreviewSamples(items);
+    detectedEventKinds = buildDetectedEventKinds(items);
+    scheduleKindsKnown = true;
 
     const subjects = [...new Set(
       items
@@ -2877,9 +3426,11 @@ async function detectSubjects() {
     acknowledgedSeminarGroupWarnings = new Set();
     seminarGroupChipInteracted = new Set();
     syncSelectedSeminarGroups(subjects, { reset: true });
+    subjectDisplayNames = {};
     assignDefaultSubjectColors(subjects);
     assignDefaultTypeColors(subjects);
     renderSubjects(subjects);
+    updateFormatKindSections();
     await saveSettingsData();
     await persistSessionState();
     setStatus(`${t("subjectsDetected")}: ${subjects.length}`);
@@ -2932,17 +3483,18 @@ async function exportCalendar() {
       const base = baseFileName(els.fileName.value);
 
       for (const subject of subjects) {
+        const displayName = getSubjectDisplayName(subject);
         const result = createIcs(items, {
           includeHolidays: els.includeHolidays.checked,
           includeDescription: els.includeDescription.checked,
-          calendarName: subject,
+          calendarName: displayName,
           subjectFilter: subject,
           language: settings.language,
         });
 
         if (result.exported > 0) {
           totalExported += result.exported;
-          const fileName = `${base}_${safeFilePart(subject)}.ics`;
+          const fileName = `${base}_${safeFilePart(displayName)}.ics`;
           await downloadIcs(result.ics, fileName);
         }
       }
@@ -3104,6 +3656,7 @@ function toggleFormatBlockEnabled() {
 }
 
 function openFormatBlockSettings(kind, token, anchor) {
+  if (!isFormatKindAvailable(kind)) return;
   activeFormatBlock = { kind, token };
   ignoreFormatBlockOutsideClick = true;
   setTimeout(() => {
@@ -3140,7 +3693,7 @@ function renderBlockBuilder(kind) {
   tokens.forEach((token) => {
     const item = document.createElement("div");
     item.className = "block-item";
-    item.draggable = true;
+    item.draggable = isFormatKindAvailable(kind);
     item.dataset.token = token;
 
     const chipWrap = document.createElement("div");
@@ -3168,7 +3721,7 @@ function renderBlockBuilder(kind) {
     updateBlockItemState(item, kind, token);
 
     item.addEventListener("dragstart", (event) => {
-      if (event.target.closest(".block-gear")) {
+      if (!isFormatKindAvailable(kind) || event.target.closest(".block-gear")) {
         event.preventDefault();
         return;
       }
@@ -3229,6 +3782,7 @@ function renderAllBlockBuilders() {
   renderBlockBuilder("seminar");
   renderBlockBuilder("exam");
   updateFormatPreview();
+  updateFormatKindSections();
 }
 
 function clearInMemorySessionState() {
@@ -3239,6 +3793,9 @@ function clearInMemorySessionState() {
   selectedSeminarGroups = {};
   acknowledgedSeminarGroupWarnings = new Set();
   seminarGroupChipInteracted = new Set();
+  detectedEventKinds = { theory: false, seminar: false, exam: false };
+  scheduleKindsKnown = false;
+  subjectFormatPreviewSamples = {};
 }
 
 async function clearPersistedSessionState() {
@@ -3252,6 +3809,8 @@ function renderEmptySubjectsState() {
   els.subjectsList.className = "subjects-empty";
   els.subjectsList.textContent = t("subjectsEmpty");
   updateGoogleSteps();
+  updateFormatPreview();
+  updateFormatKindSections();
 }
 
 function updateVersionLabel() {
@@ -3265,6 +3824,9 @@ function resetFormControls() {
   els.includeHolidays.checked = false;
   els.includeDescription.checked = false;
   els.splitBySubject.checked = false;
+  settings.googleEventReminderEnabled = false;
+  settings.googleEventReminderMinutes = DEFAULT_SETTINGS.googleEventReminderMinutes;
+  syncGoogleEventReminderControls();
   renderEmptySubjectsState();
 }
 
@@ -3313,6 +3875,16 @@ function applyI18n() {
   updateGoogleSetupHint();
   updateGoogleCalendarNameField();
   if (activeFormatBlock) syncFormatBlockPopoverFields();
+  if (!els.datePickerPopover?.classList.contains("hidden")) {
+    if (els.datePickerHeading && activeDatePickerTarget) {
+      els.datePickerHeading.textContent = t(
+        activeDatePickerTarget === "endDate" ? "endDate" : "startDate"
+      );
+    }
+    renderDatePickerWeekdays();
+    renderDatePickerGrid();
+    repositionOpenDatePicker();
+  }
   if (!detectedSubjects.length) renderEmptySubjectsState();
   checkCurrentPage();
   checkGoogleConnection();
@@ -3323,8 +3895,23 @@ function updateFormatPreview() {
   ["theory", "seminar", "exam"].forEach((kind) => {
     const previewEl = els.formatPreview?.[kind];
     if (!previewEl) return;
-    const tokens = getTokensFromContainer(kind);
-    previewEl.textContent = buildFormatPreviewTitle(kind, tokens);
+    try {
+      const tokens = getTokensFromContainer(kind);
+      previewEl.textContent = buildFormatPreviewTitle(kind, tokens);
+    } catch (error) {
+      console.warn("UPF format preview fallback", error);
+      const samples = FORMAT_PREVIEW_SAMPLES[settings.language] || FORMAT_PREVIEW_SAMPLES.ca;
+      const sample = samples[kind] || samples.theory;
+      const tokens = settings.formats[kind] || DEFAULT_SETTINGS.formats[kind];
+      previewEl.textContent = buildTitleFromTokens(
+        sample.subject,
+        sample.room,
+        formatPreviewTypeLabel(kind),
+        tokens,
+        sample.group,
+        kind
+      );
+    }
   });
 }
 
@@ -3389,6 +3976,10 @@ async function loadSettings() {
     googleCalendarMode: storedSettings.googleCalendarMode === "perSubject" ? "perSubject" : "single",
     googleCalendarColors: storedSettings.googleCalendarColors || {},
     googleSubjectCalendarNames: storedSettings.googleSubjectCalendarNames || {},
+    googleEventReminderEnabled: storedSettings.googleEventReminderEnabled === true,
+    googleEventReminderMinutes: normalizeReminderMinutes(
+      storedSettings.googleEventReminderMinutes ?? DEFAULT_SETTINGS.googleEventReminderMinutes
+    ),
     savedColors: Array.isArray(storedSettings.savedColors)
       ? storedSettings.savedColors.map((hex) => normalizePickerHex(hex)).filter(Boolean)
       : [],
@@ -3398,8 +3989,20 @@ async function loadSettings() {
   migrateLegacySubjectColors();
 
   ensureFormatBlockSettings();
+  syncGoogleEventReminderControls();
 
   delete settings.darkMode;
+
+  // Noms editats: només sessió. Migra i treu qualsevol còpia antiga de local.
+  if (storedSettings.subjectDisplayNames && typeof storedSettings.subjectDisplayNames === "object") {
+    if (!Object.keys(subjectDisplayNames).length) {
+      subjectDisplayNames = { ...storedSettings.subjectDisplayNames };
+    }
+  }
+  if ("subjectDisplayNames" in settings) {
+    delete settings.subjectDisplayNames;
+    saveSettingsData();
+  }
 }
 
 async function saveSettingsData() {
@@ -3428,12 +4031,15 @@ async function toggleDarkMode() {
 }
 
 function syncSettingsForm() {
+  syncGoogleEventReminderControls();
   els.languageSelect.value = settings.language;
   updateThemeToggle();
   renderAllBlockBuilders();
 }
 
 function openSettings() {
+  closeDatePicker();
+  closeColorPalette();
   syncSettingsForm();
   els.settingsModal.classList.remove("hidden");
   els.settingsModal.setAttribute("aria-hidden", "false");
@@ -3449,6 +4055,7 @@ async function resetSettings() {
 
   await chrome.storage.local.clear();
   await clearPersistedSessionState();
+  subjectDisplayNames = {};
   settings = structuredClone(DEFAULT_SETTINGS);
   await loadLocaleMessages(settings.language);
   syncSettingsForm();
@@ -3464,12 +4071,14 @@ els.selectAllSubjects.addEventListener("click", () => {
   selectedSubjects = new Set(detectedSubjects);
   renderSubjects(detectedSubjects);
   persistSessionState();
+  renderGoogleCalendarsStep();
 });
 
 els.clearSubjects.addEventListener("click", () => {
   selectedSubjects = new Set();
   renderSubjects(detectedSubjects, true);
   persistSessionState();
+  renderGoogleCalendarsStep();
 });
 
 els.exportBtn.addEventListener("click", exportCalendar);
@@ -3480,7 +4089,63 @@ els.syncStopBtn?.addEventListener("click", requestSyncAbort);
 els.modeManualBtn?.addEventListener("click", () => setMode("manual"));
 els.modeGoogleBtn?.addEventListener("click", () => setMode("google"));
 
-window.addEventListener("resize", repositionOpenColorPalette);
+window.addEventListener("resize", () => {
+  repositionOpenColorPalette();
+  repositionOpenDatePicker();
+});
+
+els.startDatePickerBtn?.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  openDatePicker("startDate", els.startDatePickerBtn);
+});
+
+els.endDatePickerBtn?.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  openDatePicker("endDate", els.endDatePickerBtn);
+});
+
+els.datePickerPrev?.addEventListener("click", (event) => {
+  event.stopPropagation();
+  datePickerView = new Date(datePickerView.getFullYear(), datePickerView.getMonth() - 1, 1);
+  renderDatePickerGrid();
+});
+
+els.datePickerNext?.addEventListener("click", (event) => {
+  event.stopPropagation();
+  datePickerView = new Date(datePickerView.getFullYear(), datePickerView.getMonth() + 1, 1);
+  renderDatePickerGrid();
+});
+
+els.datePickerClear?.addEventListener("click", (event) => {
+  event.stopPropagation();
+  const input = getDatePickerTargetInput();
+  if (!input) return;
+  input.value = "";
+  input.dispatchEvent(new Event("change", { bubbles: true }));
+  renderDatePickerGrid();
+});
+
+els.datePickerToday?.addEventListener("click", (event) => {
+  event.stopPropagation();
+  const input = getDatePickerTargetInput();
+  if (!input) return;
+  const today = formatDateInput(new Date());
+  input.value = today;
+  input.dispatchEvent(new Event("change", { bubbles: true }));
+  closeDatePicker();
+  input.focus();
+});
+
+els.datePickerPopover?.addEventListener("mousedown", (event) => event.stopPropagation());
+els.datePickerPopover?.addEventListener("click", (event) => event.stopPropagation());
+
+[els.startDate, els.endDate].forEach((input) => {
+  input?.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeDatePicker();
+  });
+});
 
 document.addEventListener("click", (event) => {
   if (
@@ -3496,6 +4161,15 @@ document.addEventListener("click", (event) => {
   if (!ignoreFormatBlockOutsideClick && !els.formatBlockPopover?.classList.contains("hidden")) {
     if (!event.target.closest(".block-gear") && !event.target.closest("#formatBlockPopover")) {
       closeFormatBlockPopover();
+    }
+  }
+
+  if (!ignoreDatePickerOutsideClick && !els.datePickerPopover?.classList.contains("hidden")) {
+    if (
+      !event.target.closest(".date-picker-trigger") &&
+      !event.target.closest("#datePickerPopover")
+    ) {
+      closeDatePicker();
     }
   }
 });
@@ -3533,6 +4207,7 @@ document.addEventListener("keydown", (event) => {
   if (!els.settingsModal.classList.contains("hidden")) closeSettings();
   if (!els.formatBlockPopover?.classList.contains("hidden")) closeFormatBlockPopover();
   closeColorPalette();
+  closeDatePicker();
 });
 
 els.settingsModal.addEventListener("click", (event) => {
@@ -3553,6 +4228,50 @@ els.endDate.addEventListener("change", () => {
 });
 els.includeHolidays.addEventListener("change", persistSessionState);
 els.includeDescription.addEventListener("change", persistSessionState);
+els.googleEventReminder?.addEventListener("change", () => {
+  settings.googleEventReminderEnabled = els.googleEventReminder.checked;
+  setGoogleEventReminderEnabledUI(els.googleEventReminder.checked);
+  if (els.googleEventReminder.checked) {
+    settings.googleEventReminderMinutes = getGoogleEventReminderMinutes();
+    els.googleEventReminderMinutes.value = String(settings.googleEventReminderMinutes);
+    autosizeReminderMinutesInput();
+  }
+  saveSettingsData();
+});
+els.googleEventReminderMinutes?.addEventListener("input", () => {
+  const raw = String(els.googleEventReminderMinutes.value || "").replace(/\D/g, "");
+  els.googleEventReminderMinutes.value = raw;
+  autosizeReminderMinutesInput();
+  if (!els.googleEventReminder?.checked) return;
+  if (raw === "") return;
+  settings.googleEventReminderMinutes = getGoogleEventReminderMinutes();
+  saveSettingsData();
+});
+els.googleEventReminderMinutes?.addEventListener("change", () => {
+  settings.googleEventReminderMinutes = getGoogleEventReminderMinutes();
+  els.googleEventReminderMinutes.value = String(settings.googleEventReminderMinutes);
+  autosizeReminderMinutesInput();
+  saveSettingsData();
+});
+els.googleEventReminderMinutes?.addEventListener("keydown", (event) => {
+  if (event.key === "ArrowUp") {
+    event.preventDefault();
+    bumpGoogleEventReminderMinutes(1);
+  } else if (event.key === "ArrowDown") {
+    event.preventDefault();
+    bumpGoogleEventReminderMinutes(-1);
+  }
+});
+els.googleEventReminderOption?.querySelector(".option-check-reminder-row")?.addEventListener(
+  "pointerdown",
+  (event) => event.stopPropagation()
+);
+els.googleEventReminderOption?.querySelector(".option-check-reminder-row")?.addEventListener(
+  "click",
+  (event) => event.stopPropagation()
+);
+bindReminderStepperButton(els.googleEventReminderUp, 1);
+bindReminderStepperButton(els.googleEventReminderDown, -1);
 els.googleCalendarName?.addEventListener("input", () => {
   readGoogleCalendarNameFromForm();
   saveSettingsData();

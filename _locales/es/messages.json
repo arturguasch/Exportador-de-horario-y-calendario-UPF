@@ -32,6 +32,21 @@
   "darkModeLabel": {
     "message": "Modo oscuro"
   },
+  "datePickerClear": {
+    "message": "Borrar"
+  },
+  "datePickerNextMonth": {
+    "message": "Mes siguiente"
+  },
+  "datePickerOpen": {
+    "message": "Abrir calendario"
+  },
+  "datePickerPrevMonth": {
+    "message": "Mes anterior"
+  },
+  "datePickerToday": {
+    "message": "Hoy"
+  },
   "descriptionBuilding": {
     "message": "Edificio"
   },
@@ -94,6 +109,36 @@
   },
   "examFormat": {
     "message": "Exámenes"
+  },
+  "formatNoTheoryDetected": {
+    "message": "No se ha detectado ninguna clase de teoría en el horario. No hace falta configurar este formato."
+  },
+  "formatNoSeminarDetected": {
+    "message": "No se ha detectado ningún seminario en el horario. No hace falta configurar este formato."
+  },
+  "formatNoExamDetected": {
+    "message": "No se ha detectado ningún examen en el horario. No hace falta configurar este formato."
+  },
+  "formatNoTheorySelected": {
+    "message": "No se ha detectado ninguna clase de teoría en las materias seleccionadas. No hace falta configurar este formato."
+  },
+  "formatNoSeminarSelected": {
+    "message": "No se ha detectado ningún seminario en las materias seleccionadas. No hace falta configurar este formato."
+  },
+  "formatNoExamSelected": {
+    "message": "No se ha detectado ningún examen en las materias seleccionadas. No hace falta configurar este formato."
+  },
+  "googleEventReminder": {
+    "message": "Notificarme antes de cada clase"
+  },
+  "googleEventReminderMinutes": {
+    "message": "Minutos antes"
+  },
+  "googleEventReminderUp": {
+    "message": "Aumentar minutos"
+  },
+  "googleEventReminderDown": {
+    "message": "Reducir minutos"
   },
   "exportIcs": {
     "message": "Exportar .ics"
@@ -322,6 +367,12 @@
   },
   "subjectsTitle": {
     "message": "Materias"
+  },
+  "subjectDisplayNameLabel": {
+    "message": "Nombre de la materia"
+  },
+  "subjectDisplayNameHint": {
+    "message": "Puedes editar el nombre. Si lo dejas vacío, se restaura el nombre original."
   },
   "theoryFormat": {
     "message": "Clases de teoría"

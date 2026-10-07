@@ -77,15 +77,39 @@
     <section class="card google-step-card manual-step-card" id="datesCard">
       <p class="step-badge manual-only" data-i18n="manualStepDates">2. Data inicial i final</p>
       <p class="step-badge google-only" data-i18n="googleStepDates">2. Data inicial i final</p>
-      <label class="field">
-        <span data-i18n="startDate">Data inicial</span>
-        <input id="startDate" type="date">
-      </label>
+      <div class="field date-field">
+        <label for="startDate" data-i18n="startDate">Data inicial</label>
+        <div class="date-input-wrap">
+          <input id="startDate" type="date">
+          <button type="button" class="date-picker-trigger" id="startDatePickerBtn" data-date-target="startDate" data-i18n-aria="datePickerOpen" aria-label="Obrir calendari" aria-haspopup="dialog" aria-expanded="false">
+            <svg class="date-picker-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+              <rect x="3" y="5" width="18" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M3 10h18" fill="none" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <circle cx="8.5" cy="15" r="1.1" fill="currentColor"/>
+              <circle cx="12" cy="15" r="1.1" fill="currentColor"/>
+              <circle cx="15.5" cy="15" r="1.1" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
+      </div>
 
-      <label class="field">
-        <span data-i18n="endDate">Data final</span>
-        <input id="endDate" type="date">
-      </label>
+      <div class="field date-field">
+        <label for="endDate" data-i18n="endDate">Data final</label>
+        <div class="date-input-wrap">
+          <input id="endDate" type="date">
+          <button type="button" class="date-picker-trigger" id="endDatePickerBtn" data-date-target="endDate" data-i18n-aria="datePickerOpen" aria-label="Obrir calendari" aria-haspopup="dialog" aria-expanded="false">
+            <svg class="date-picker-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+              <rect x="3" y="5" width="18" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M3 10h18" fill="none" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <circle cx="8.5" cy="15" r="1.1" fill="currentColor"/>
+              <circle cx="12" cy="15" r="1.1" fill="currentColor"/>
+              <circle cx="15.5" cy="15" r="1.1" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
+      </div>
 
       <input id="calendarName" type="hidden" value="Horari UPF">
       <input id="fileName" type="hidden" value="upf_calendari.ics">
@@ -148,31 +172,40 @@
       </div>
       <p class="mini" data-i18n="blockHint">Arrossega els blocs. L'aula es separa amb "|" automàticament.</p>
 
-      <div class="block-builder">
+      <div class="block-builder" data-format-kind="theory">
         <div class="block-label" data-i18n="theoryFormat">Classes de teoria</div>
-        <div id="theoryBlocks" class="blocks-row" data-kind="theory"></div>
-        <p class="format-preview">
-          <span class="format-preview-label" data-i18n="formatPreviewLabel">Exemple:</span>
-          <span id="theoryFormatPreview" class="format-preview-value"></span>
-        </p>
+        <p class="format-kind-empty hidden" data-i18n="formatNoTheoryDetected">No s’ha detectat cap classe de teoria a l’horari.</p>
+        <div class="format-kind-body">
+          <div id="theoryBlocks" class="blocks-row" data-kind="theory"></div>
+          <p class="format-preview">
+            <span class="format-preview-label" data-i18n="formatPreviewLabel">Exemple:</span>
+            <span id="theoryFormatPreview" class="format-preview-value"></span>
+          </p>
+        </div>
       </div>
 
-      <div class="block-builder">
+      <div class="block-builder" data-format-kind="seminar">
         <div class="block-label" data-i18n="seminarFormat">Seminaris</div>
-        <div id="seminarBlocks" class="blocks-row" data-kind="seminar"></div>
-        <p class="format-preview">
-          <span class="format-preview-label" data-i18n="formatPreviewLabel">Exemple:</span>
-          <span id="seminarFormatPreview" class="format-preview-value"></span>
-        </p>
+        <p class="format-kind-empty hidden" data-i18n="formatNoSeminarDetected">No s’ha detectat cap seminari a l’horari.</p>
+        <div class="format-kind-body">
+          <div id="seminarBlocks" class="blocks-row" data-kind="seminar"></div>
+          <p class="format-preview">
+            <span class="format-preview-label" data-i18n="formatPreviewLabel">Exemple:</span>
+            <span id="seminarFormatPreview" class="format-preview-value"></span>
+          </p>
+        </div>
       </div>
 
-      <div class="block-builder">
+      <div class="block-builder" data-format-kind="exam">
         <div class="block-label" data-i18n="examFormat">Exàmens</div>
-        <div id="examBlocks" class="blocks-row" data-kind="exam"></div>
-        <p class="format-preview">
-          <span class="format-preview-label" data-i18n="formatPreviewLabel">Exemple:</span>
-          <span id="examFormatPreview" class="format-preview-value"></span>
-        </p>
+        <p class="format-kind-empty hidden" data-i18n="formatNoExamDetected">No s’ha detectat cap examen a l’horari.</p>
+        <div class="format-kind-body">
+          <div id="examBlocks" class="blocks-row" data-kind="exam"></div>
+          <p class="format-preview">
+            <span class="format-preview-label" data-i18n="formatPreviewLabel">Exemple:</span>
+            <span id="examFormatPreview" class="format-preview-value"></span>
+          </p>
+        </div>
       </div>
 
       <div class="format-reset-row">
@@ -180,19 +213,40 @@
       </div>
 
       <div class="option-checks">
+      <div class="option-check option-check-stacked google-only" id="googleEventReminderOption">
+        <label class="option-check-main">
+          <input id="googleEventReminder" type="checkbox" class="subject-check-input">
+          <span class="subject-check-mark" aria-hidden="true"></span>
+          <span data-i18n="googleEventReminder">Notificar-me abans de cada classe</span>
+        </label>
+        <div class="option-check-reminder-row">
+          <span class="reminder-minutes-label" data-i18n="googleEventReminderMinutes">Minuts abans</span>
+          <div class="reminder-stepper" id="googleEventReminderStepper">
+            <input id="googleEventReminderMinutes" type="text" inputmode="numeric" maxlength="5" value="10" disabled autocomplete="off" spellcheck="false">
+            <div class="reminder-stepper-buttons">
+              <button type="button" id="googleEventReminderUp" class="reminder-stepper-btn" data-i18n-aria="googleEventReminderUp" aria-label="Augmentar minuts" disabled>▴</button>
+              <button type="button" id="googleEventReminderDown" class="reminder-stepper-btn" data-i18n-aria="googleEventReminderDown" aria-label="Reduir minuts" disabled>▾</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <label class="option-check">
-        <input id="includeHolidays" type="checkbox">
+        <input id="includeHolidays" type="checkbox" class="subject-check-input">
+        <span class="subject-check-mark" aria-hidden="true"></span>
         <span data-i18n="includeHolidays">Incloure festius i vacances</span>
       </label>
 
       <label class="option-check">
-        <input id="includeDescription" type="checkbox">
+        <input id="includeDescription" type="checkbox" class="subject-check-input">
+        <span class="subject-check-mark" aria-hidden="true"></span>
         <span data-i18n="includeDescription">Incloure descripció extensiva</span>
       </label>
 
       <div class="option-check option-check-stacked manual-only">
         <label class="option-check-main">
-          <input id="splitBySubject" type="checkbox">
+          <input id="splitBySubject" type="checkbox" class="subject-check-input">
+          <span class="subject-check-mark" aria-hidden="true"></span>
           <span data-i18n="splitBySubject">Crear un .ics per cada matèria seleccionada</span>
         </label>
         <p class="option-check-hint" data-i18n="splitBySubjectHint">Recomanat si vols assignar un color diferent a cada matèria quan importis els fitxers al calendari.</p>
@@ -255,7 +309,8 @@
       </label>
 
       <label class="option-check format-block-room-sep" id="formatBlockSepWrap">
-        <input id="formatBlockSeparators" type="checkbox">
+        <input id="formatBlockSeparators" type="checkbox" class="subject-check-input">
+        <span class="subject-check-mark" aria-hidden="true"></span>
         <span data-i18n="formatBlockSeparators">Separar amb "|"</span>
       </label>
 
@@ -326,6 +381,23 @@
       </p>
     </div>
   </section>
+
+  <div id="datePickerBackdrop" class="date-picker-backdrop hidden" aria-hidden="true"></div>
+
+  <div id="datePickerPopover" class="date-picker-popover hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="datePickerHeading">
+    <p id="datePickerHeading" class="date-picker-heading"></p>
+    <div class="date-picker-head">
+      <button type="button" id="datePickerPrev" class="date-picker-nav" data-i18n-aria="datePickerPrevMonth" aria-label="Mes anterior">‹</button>
+      <p id="datePickerTitle" class="date-picker-title"></p>
+      <button type="button" id="datePickerNext" class="date-picker-nav" data-i18n-aria="datePickerNextMonth" aria-label="Mes següent">›</button>
+    </div>
+    <div id="datePickerWeekdays" class="date-picker-weekdays" aria-hidden="true"></div>
+    <div id="datePickerGrid" class="date-picker-grid" role="grid"></div>
+    <div class="date-picker-footer">
+      <button type="button" id="datePickerClear" class="date-picker-footer-btn" data-i18n="datePickerClear">Esborrar</button>
+      <button type="button" id="datePickerToday" class="date-picker-footer-btn date-picker-footer-btn-primary" data-i18n="datePickerToday">Avui</button>
+    </div>
+  </div>
 
   <div id="colorPaletteBackdrop" class="color-palette-backdrop hidden" aria-hidden="true"></div>
 

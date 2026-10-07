@@ -666,11 +666,21 @@ function buildGoogleEvent(item, helpers) {
     if (description) event.description = description;
   }
 
-  // Per-subject calendars use calendar colour only; event labels would duplicate swatches.
-  if (helpers.calendarMode === "perSubject") {
-    return event;
+  if (helpers.eventReminderEnabled) {
+    const minutes = Math.floor(Number(helpers.eventReminderMinutes));
+    if (Number.isFinite(minutes) && minutes >= 0) {
+      event.reminders = {
+        useDefault: false,
+        overrides: [{
+          method: "popup",
+          minutes: Math.min(minutes, 40320),
+        }],
+      };
+    }
   }
 
+  // Calendar sidebar colour comes from the calendar resource itself.
+  // Event colours (main / seminar / exam) are applied here in both modes.
   const subject = helpers.normalizeSubject(item);
   const colorRef = helpers.getEventColorId?.(item) ?? helpers.getSubjectColorId?.(subject);
   const resolved = resolveColorRef(colorRef);
@@ -903,15 +913,13 @@ async function runPreparedSync(job, onProgress = () => {}, options = {}) {
       calendarId: calendar.id,
     });
 
-    if (job.calendarMode !== "perSubject") {
-      try {
-        const neededLabelColors = collectUsedLabelColors(target.events || []);
-        const labelIdRemap = await ensureCalendarLabels(token, calendar.id, neededLabelColors);
-        applyLabelIdRemap(target.events || [], labelIdRemap);
-      } catch (error) {
-        console.warn("UPF labels setup failed, syncing without event colors", error);
-        stripEventLabelIds(target.events || []);
-      }
+    try {
+      const neededLabelColors = collectUsedLabelColors(target.events || []);
+      const labelIdRemap = await ensureCalendarLabels(token, calendar.id, neededLabelColors);
+      applyLabelIdRemap(target.events || [], labelIdRemap);
+    } catch (error) {
+      console.warn("UPF labels setup failed, syncing without event colors", error);
+      stripEventLabelIds(target.events || []);
     }
 
     if (target.colorHex) {

@@ -32,6 +32,21 @@
   "darkModeLabel": {
     "message": "Mode fosc"
   },
+  "datePickerClear": {
+    "message": "Esborrar"
+  },
+  "datePickerNextMonth": {
+    "message": "Mes següent"
+  },
+  "datePickerOpen": {
+    "message": "Obrir calendari"
+  },
+  "datePickerPrevMonth": {
+    "message": "Mes anterior"
+  },
+  "datePickerToday": {
+    "message": "Avui"
+  },
   "descriptionBuilding": {
     "message": "Edifici"
   },
@@ -94,6 +109,36 @@
   },
   "examFormat": {
     "message": "Exàmens"
+  },
+  "formatNoTheoryDetected": {
+    "message": "No s’ha detectat cap classe de teoria a l’horari. No cal configurar aquest format."
+  },
+  "formatNoSeminarDetected": {
+    "message": "No s’ha detectat cap seminari a l’horari. No cal configurar aquest format."
+  },
+  "formatNoExamDetected": {
+    "message": "No s’ha detectat cap examen a l’horari. No cal configurar aquest format."
+  },
+  "formatNoTheorySelected": {
+    "message": "No s’ha detectat cap classe de teoria a les matèries seleccionades. No cal configurar aquest format."
+  },
+  "formatNoSeminarSelected": {
+    "message": "No s’ha detectat cap seminari a les matèries seleccionades. No cal configurar aquest format."
+  },
+  "formatNoExamSelected": {
+    "message": "No s’ha detectat cap examen a les matèries seleccionades. No cal configurar aquest format."
+  },
+  "googleEventReminder": {
+    "message": "Notificar-me abans de cada classe"
+  },
+  "googleEventReminderMinutes": {
+    "message": "Minuts abans"
+  },
+  "googleEventReminderUp": {
+    "message": "Augmentar minuts"
+  },
+  "googleEventReminderDown": {
+    "message": "Reduir minuts"
   },
   "exportIcs": {
     "message": "Exportar .ics"
@@ -322,6 +367,12 @@
   },
   "subjectsTitle": {
     "message": "Matèries"
+  },
+  "subjectDisplayNameLabel": {
+    "message": "Nom de la matèria"
+  },
+  "subjectDisplayNameHint": {
+    "message": "Pots editar el nom. Si el deixes buit, es restaura el nom original."
   },
   "theoryFormat": {
     "message": "Classes de teoria"

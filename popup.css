@@ -194,18 +194,256 @@ body.dark-mode .toggle-switch input:focus-visible + .toggle-slider {
 }
 
 
-input[type="date"] {
-  cursor: text;
-  min-height: 38px;
+.date-input-wrap {
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
 }
 
-input[type="date"]::-webkit-calendar-picker-indicator {
+.date-input-wrap:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(20, 87, 217, 0.12);
+}
+
+body.dark-mode .date-input-wrap {
+  background: #101827;
+}
+
+body.dark-mode .date-input-wrap:focus-within {
+  box-shadow: 0 0 0 3px rgba(30, 167, 255, 0.16);
+}
+
+.date-input-wrap input[type="date"] {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+  min-height: 38px;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  cursor: text;
+  color-scheme: light;
+}
+
+.date-input-wrap input[type="date"]:focus {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+body.dark-mode .date-input-wrap input[type="date"] {
+  background: transparent;
+  color-scheme: dark;
+}
+
+.date-input-wrap input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  display: none;
+}
+
+.date-picker-trigger {
+  flex: 0 0 38px;
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  min-height: 38px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid var(--border);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--soft) 45%, transparent);
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.date-picker-trigger:hover,
+.date-picker-trigger[aria-expanded="true"] {
+  background: var(--soft);
+  color: var(--primary);
+}
+
+.date-picker-icon {
+  display: block;
+}
+
+.date-picker-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1190;
+  background: rgba(15, 23, 42, 0.28);
+  cursor: default;
+}
+
+body.dark-mode .date-picker-backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.date-picker-popover {
+  position: fixed;
+  z-index: 1200;
+  left: 50%;
+  top: 72px;
+  width: 292px;
+  max-width: calc(100vw - 24px);
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.22);
+  box-sizing: border-box;
+  color: var(--text);
+  transform: translateX(-50%);
+}
+
+body.dark-mode .date-picker-popover {
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+.date-picker-heading {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.date-picker-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.date-picker-title {
+  flex: 1;
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: capitalize;
+  color: var(--text);
+}
+
+.date-picker-nav {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--soft) 55%, transparent);
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.date-picker-nav:hover {
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+  background: var(--soft);
+  color: var(--primary);
+}
+
+.date-picker-weekdays,
+.date-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.date-picker-weekdays {
+  margin-bottom: 4px;
+}
+
+.date-picker-weekday {
+  display: grid;
+  place-items: center;
+  height: 28px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.date-picker-day {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.date-picker-day:hover:not(:disabled) {
+  background: var(--soft);
+  color: var(--primary);
+}
+
+.date-picker-day.is-outside {
+  color: color-mix(in srgb, var(--muted) 55%, transparent);
+}
+
+.date-picker-day.is-today:not(.is-selected) {
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--primary) 45%, transparent);
+  font-weight: 700;
+}
+
+.date-picker-day.is-selected {
+  background: linear-gradient(160deg, color-mix(in srgb, var(--primary) 88%, #fff), var(--primary-dark));
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--primary) 35%, transparent);
+}
+
+.date-picker-day:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.date-picker-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+}
+
+.date-picker-footer-btn {
+  margin: 0;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--primary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
 }
 
-body.dark-mode input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(1) brightness(2.2);
-  opacity: 1;
+.date-picker-footer-btn:hover {
+  background: var(--soft);
+}
+
+.date-picker-footer-btn-primary {
+  background: color-mix(in srgb, var(--soft) 80%, transparent);
 }
 
 body {
@@ -399,7 +637,8 @@ p {
   margin-bottom: 0;
 }
 
-.field span {
+.field span,
+.field > label {
   font-size: 12px;
   color: var(--muted);
   font-weight: 700;
@@ -465,16 +704,12 @@ input::placeholder {
   background: var(--soft);
 }
 
-.option-check input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  margin: 0;
+.option-check .subject-check-mark {
   flex-shrink: 0;
-  accent-color: var(--primary);
-  cursor: pointer;
 }
 
-.option-check span {
+.option-check > span:not(.subject-check-mark),
+.option-check-main > span:not(.subject-check-mark) {
   font-size: 13px;
   line-height: 1.35;
   color: var(--text);
@@ -501,10 +736,116 @@ input::placeholder {
 
 .option-check-hint {
   margin: 0;
-  padding: 0 0 0 30px;
+  padding: 0 0 0 32px;
   font-size: 11px;
   line-height: 1.4;
   color: var(--muted);
+}
+
+.option-check-reminder-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 0 0 32px;
+}
+
+.reminder-minutes-label {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.2;
+}
+
+.reminder-stepper {
+  display: inline-flex;
+  align-items: stretch;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--card);
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.reminder-stepper.is-disabled {
+  opacity: 0.45;
+  background: color-mix(in srgb, var(--border) 18%, var(--card));
+}
+
+.reminder-stepper:not(.is-disabled):focus-within {
+  border-color: color-mix(in srgb, var(--primary) 55%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
+.reminder-stepper input {
+  width: 2ch;
+  min-width: 0;
+  max-width: 6ch;
+  height: 100%;
+  margin: 0;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  outline: none;
+  box-sizing: content-box;
+}
+
+.reminder-stepper input:disabled {
+  cursor: not-allowed;
+  color: var(--muted);
+}
+
+.reminder-stepper-buttons {
+  display: flex;
+  flex-direction: column;
+  width: 22px;
+  border-left: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  background: color-mix(in srgb, var(--soft) 55%, transparent);
+}
+
+.reminder-stepper-btn {
+  display: grid;
+  place-items: center;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.reminder-stepper-btn + .reminder-stepper-btn {
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+
+.reminder-stepper-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+  color: var(--primary);
+}
+
+.reminder-stepper-btn:active:not(:disabled) {
+  background: color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+.reminder-stepper-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+body.dark-mode .reminder-stepper {
+  background: #0f172a;
+}
+
+body.dark-mode .reminder-stepper-buttons {
+  background: color-mix(in srgb, #223354 70%, transparent);
 }
 
 .subjects-head {
@@ -560,6 +901,7 @@ body.dark-mode .subject-card {
 }
 
 .subject-summary input,
+.subject-summary .subject-check,
 .subject-summary .color-picker-trigger,
 .subject-summary .subject-expand-btn,
 .subject-summary .subject-group-warning {
@@ -879,20 +1221,179 @@ body.dark-mode .subject-type-color-inherited {
   background: #fbfcff;
 }
 
-.subject-row input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+.subject-check {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   margin: 0;
   flex-shrink: 0;
-  accent-color: var(--primary);
   cursor: pointer;
+  border-radius: 10px;
+  user-select: none;
+}
+
+.subject-check-input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  pointer-events: none;
+}
+
+.subject-check-mark {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 7px;
+  border: 1.5px solid color-mix(in srgb, var(--border) 85%, var(--muted));
+  background: color-mix(in srgb, var(--card) 80%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.12s ease;
+}
+
+.subject-check-mark::after {
+  content: "";
+  width: 5px;
+  height: 9px;
+  margin-top: -1px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: scale(0.55) rotate(45deg);
+  opacity: 0;
+  transition: opacity 0.12s ease, transform 0.16s ease;
+}
+
+.subject-check:hover .subject-check-mark,
+.option-check:hover .subject-check-mark,
+.option-check-main:hover .subject-check-mark {
+  border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+  background: color-mix(in srgb, var(--soft) 70%, var(--card));
+}
+
+.subject-check-input:checked + .subject-check-mark {
+  background: linear-gradient(160deg, color-mix(in srgb, var(--primary) 88%, #fff), var(--primary-dark));
+  border-color: transparent;
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--primary) 35%, transparent);
+}
+
+.subject-check-input:checked + .subject-check-mark::after {
+  opacity: 1;
+  transform: scale(1) rotate(45deg);
+}
+
+.subject-check-input:focus-visible + .subject-check-mark {
+  outline: 2px solid color-mix(in srgb, var(--primary) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.subject-check:active .subject-check-mark,
+label.option-check:active .subject-check-mark,
+.option-check-main:active .subject-check-mark {
+  transform: scale(0.94);
+}
+
+body.dark-mode .subject-check-mark {
+  border-color: color-mix(in srgb, #94a3b8 40%, transparent);
+  background: color-mix(in srgb, #0f172a 55%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+body.dark-mode .subject-check:hover .subject-check-mark,
+body.dark-mode .option-check:hover .subject-check-mark,
+body.dark-mode .option-check-main:hover .subject-check-mark {
+  border-color: color-mix(in srgb, var(--primary) 60%, #94a3b8);
+  background: color-mix(in srgb, var(--soft) 55%, #0f172a);
+}
+
+body.dark-mode .subject-check-input:checked + .subject-check-mark {
+  background: linear-gradient(160deg, color-mix(in srgb, var(--primary) 75%, #fff), var(--primary));
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--primary) 40%, transparent);
+}
+
+.subject-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: auto;
+  min-height: 32px;
+}
+
+.subject-row .color-picker-trigger,
+.subject-row .subject-expand-btn,
+.subject-row .subject-expand-spacer,
+.subject-row .subject-group-warning {
+  flex-shrink: 0;
+  margin-top: 0;
+  margin-left: 0;
+}
+
+.subject-expand-spacer {
+  display: inline-block;
+  width: 40px;
+  height: 32px;
+  box-sizing: border-box;
+  pointer-events: none;
 }
 
 .subject-name {
   font-size: 12.5px;
-  line-height: 1.25;
+  line-height: 1.3;
   flex: 1;
   min-width: 0;
+  width: 100%;
+  min-height: 32px;
+  margin: 0;
+  padding: 6px 8px;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--card) 55%, transparent);
+  color: inherit;
+  font-family: inherit;
+  box-sizing: border-box;
+  resize: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.subject-name:hover {
+  border-color: color-mix(in srgb, var(--border) 100%, transparent);
+  background: color-mix(in srgb, #fff 80%, transparent);
+}
+
+.subject-name:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--primary) 55%, transparent);
+  background: #fff;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
+body.dark-mode .subject-name {
+  border-color: color-mix(in srgb, #94a3b8 28%, transparent);
+  background: color-mix(in srgb, #0f172a 45%, transparent);
+  color: #eef4ff;
+}
+
+body.dark-mode .subject-name:hover,
+body.dark-mode .subject-name:focus {
+  border-color: color-mix(in srgb, #94a3b8 45%, transparent);
+  background: color-mix(in srgb, #0f172a 75%, transparent);
+  color: #eef4ff;
+}
+
+body.dark-mode .subject-name:focus {
+  border-color: color-mix(in srgb, var(--primary) 55%, transparent);
 }
 
 .color-picker-trigger {
@@ -1834,6 +2335,51 @@ body.dark-mode .danger-button:hover {
 
 .block-builder {
   margin-top: 12px;
+}
+
+.block-builder.is-inactive {
+  margin-top: 12px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+  background: color-mix(in srgb, var(--border) 18%, transparent);
+}
+
+.block-builder.is-inactive .block-label {
+  opacity: 0.55;
+}
+
+.block-builder.is-inactive .format-kind-body {
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.3;
+  filter: grayscale(0.15);
+}
+
+.block-builder.is-inactive .blocks-row {
+  background: transparent;
+}
+
+.format-kind-empty {
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px dashed color-mix(in srgb, var(--border) 90%, transparent);
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+body.dark-mode .block-builder.is-inactive {
+  background: color-mix(in srgb, #0f172a 45%, transparent);
+  border-color: color-mix(in srgb, #94a3b8 22%, transparent);
+}
+
+body.dark-mode .format-kind-empty {
+  background: color-mix(in srgb, #1a2438 88%, transparent);
+  border-color: color-mix(in srgb, #94a3b8 35%, transparent);
 }
 
 .block-label {
